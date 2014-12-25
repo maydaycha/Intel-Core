@@ -15,7 +15,7 @@ public abstract class FIMqttSink extends FIMqttObject implements FISink {
 	
 	protected final String mSource;
 	
-	public FIMqttSink(String uri, String name, String source, FIParams params) {
+	public FIMqttSink(String uri, String name, FIParams params, String source) {
 		super(uri, name, params);
 		
 		mSource = source;
@@ -45,8 +45,8 @@ public abstract class FIMqttSink extends FIMqttObject implements FISink {
 
 	@Override
 	public void onFIMessageArrived(FIMessage message) {	
-		if (mSource.equals(message.id)) {		
-			source(message);
+		if (mSource.equals(message.id)) {
+			source(message.value(0.0f));
 			
 			publish();
 		}

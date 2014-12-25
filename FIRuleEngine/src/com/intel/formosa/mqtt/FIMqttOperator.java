@@ -11,24 +11,25 @@ import com.intel.formosa.params.FIParams;
 * @author Shao-Wen Yang <shao-wen.yang@intel.com>
 *
 */
-public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOperator {
+public abstract class FIMqttOperator extends FIMqttObject implements FIOperator {
 	
-	protected final String mLhs;
-	protected final String mRhs;
+	protected final String[] mSources;
 	
-	public FIMqttBinaryOperator(String uri, String name, FIParams params, String lhs, String rhs) {
+	public FIMqttOperator(String uri, String name, FIParams params, String ... sources) {
 		super(uri, name, params);
 		
-		mLhs = lhs;
-		mRhs = rhs;
+		mSources = new String[sources.length];
+		
+		System.arraycopy(sources, 0, mSources, 0, sources.length);
 	}
 
 	@Override
 	public void start() {
 		try {
 			if (mMqttClient != null) {
-		        mMqttClient.subscribe(mLhs);	        
-		        mMqttClient.subscribe(mRhs);
+		        for (String source : mSources) {
+		        	mMqttClient.subscribe(source);
+		        }
 			}
 		} catch (MqttException e) {
 			
@@ -38,9 +39,10 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 	@Override
 	public void stop() {        
 		try {
-			if (mMqttClient != null) {       
-		        mMqttClient.unsubscribe(mLhs);	        
-		        mMqttClient.unsubscribe(mRhs);
+			if (mMqttClient != null) {   
+		        for (String source : mSources) {
+		        	mMqttClient.unsubscribe(source);
+		        }
 			}
 		} catch (MqttException e) {
 
@@ -53,7 +55,7 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 		
 		// TODO: Replace the following placeholder.
 		
-		run(0.0f, 0.0f);
+		run(new Float[] { 0.0f, 0.0f, 0.0f });
 	}
-	
+
 }

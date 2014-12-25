@@ -7,6 +7,6 @@ package com.intel.formosa;
 */
 public interface FIOperator extends FIObject {
 
-	public void run(FIMessage ... messages);
+	public <T extends Number> void run(T ... numbers);
 	
 }

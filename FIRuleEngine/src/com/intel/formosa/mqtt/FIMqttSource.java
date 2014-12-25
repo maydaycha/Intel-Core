@@ -15,7 +15,7 @@ public abstract class FIMqttSource extends FIMqttObject implements FISource {
 	
 	protected final String mSource;
 	
-	public FIMqttSource(String uri, String name, String source, FIParams params) {
+	public FIMqttSource(String uri, String name, FIParams params, String source) {
 		super(uri, name, params);
 		
 		mSource = source;
@@ -45,8 +45,8 @@ public abstract class FIMqttSource extends FIMqttObject implements FISource {
 
 	@Override
 	public void onFIMessageArrived(FIMessage message) {
-		if (mSource.equals(message.id)) {		
-			sink(message);
+		if (mSource.equals(message.id)) {
+			sink(message.value(0.0f));
 		}
 	}
 	

@@ -7,6 +7,6 @@ package com.intel.formosa;
 */
 public interface FISink extends FIObject {
 	
-	public void source(FIMessage message);
+	public <T extends Number> void source(T number);
 	
 }

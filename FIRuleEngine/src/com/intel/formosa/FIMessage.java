@@ -24,6 +24,47 @@ public class FIMessage {
 	
 	public <T extends Number> FIMessage(String id, T number) {
 		this(id, String.valueOf(number));
-	} 
+	}
+	
+	@Override
+	public String toString() {
+		return payload.toString();
+	}
+	
+	public <T> T value(T defaultValue) {
+		String obj = payload.toString();
+		if (obj != null) {
+			try {
+				if (defaultValue instanceof String) {
+					@SuppressWarnings("unchecked")
+					T value = (T) obj;
+					return value;
+				} else if (defaultValue instanceof Number) {
+					if (defaultValue instanceof Integer) {
+						@SuppressWarnings("unchecked")
+						T value = (T) Integer.valueOf(obj);
+						return value;
+					} else if (defaultValue instanceof Double) {
+						@SuppressWarnings("unchecked")
+						T value = (T) Double.valueOf(obj);
+						return value;						
+					} else {
+						return defaultValue;
+					}
+				} else if (defaultValue instanceof Boolean) {
+					@SuppressWarnings("unchecked")
+					T value = (T) Boolean.valueOf(obj);
+					return value;
+				} else {
+					return defaultValue;
+				}
+			} catch (ClassCastException e) {
+				return defaultValue;
+			}
+		}
+		else {
+			return defaultValue;
+		}
+	}
 	
 }

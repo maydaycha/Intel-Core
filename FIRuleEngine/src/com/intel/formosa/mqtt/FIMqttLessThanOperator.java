@@ -1,6 +1,5 @@
 package com.intel.formosa.mqtt;
 
-import com.intel.formosa.FIMessage;
 import com.intel.formosa.params.FIParams;
 
 /**
@@ -10,13 +9,13 @@ import com.intel.formosa.params.FIParams;
 */
 public class FIMqttLessThanOperator extends FIMqttBinaryOperator {
 
-	public FIMqttLessThanOperator(String uri, String name, String lhs, String rhs, FIParams params) {
-		super(uri, name, lhs, rhs, params);
+	public FIMqttLessThanOperator(String uri, String name, FIParams params, String lhs, String rhs) {
+		super(uri, name, params, lhs, rhs);
 	}
 
 	@Override
-	public void run(FIMessage ... messages) {		
-		assert messages.length >= 2;
+	public <T extends Number> void run(T ... numbers) {		
+		assert numbers.length >= 2;
 		
 		// TODO: Develop FSM to determine whether or not all parameters are received.
 		

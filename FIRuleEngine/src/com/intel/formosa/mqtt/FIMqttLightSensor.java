@@ -1,6 +1,5 @@
 package com.intel.formosa.mqtt;
 
-import com.intel.formosa.FIMessage;
 import com.intel.formosa.params.FIParams;
 
 /**
@@ -10,15 +9,15 @@ import com.intel.formosa.params.FIParams;
 */
 public class FIMqttLightSensor extends FIMqttSource {
 
-	public FIMqttLightSensor(String uri, String name, String source, FIParams params) {
-		super(uri, name, source, params);
+	public FIMqttLightSensor(String uri, String name, FIParams params, String source) {
+		super(uri, name, params, source);
 		
 		// TODO: Use parameters to configure light sensor
-		params.getParameter("ac_topic", "");
+		params.getParameter("ameliacreek", "");
 	}
 
 	@Override
-	public void sink(FIMessage unused) {		
+	public <T extends Number> void sink(T unused) {		
 		// TODO: Read in light sensor reading here.
 
     	// TODO: Construct the message and send with publish().
