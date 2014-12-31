@@ -9,9 +9,9 @@ import java.util.Arrays;
 */
 public class FIMessage {
 
-	public final String id;
+	public String id;
 
-	public final byte[] payload;
+	public byte[] payload;
 	
 	public FIMessage(String id, byte[] payload) {
 		this.id = id;
