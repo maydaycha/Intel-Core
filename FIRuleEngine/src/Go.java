@@ -40,11 +40,11 @@ public class Go implements Runnable {
 		// TODO Auto-generated method stub
 		
 		FIConfigParams parameter = new FIConfigParams(); 
-		looper = new FIMqttLooper("tcp://192.168.184.129:1883", "/formosa/1/Looper", parameter.setParameter("", ""), "/Gateway1/Illuminance/Illuminance2");
+		looper = new FIMqttLooper("tcp://192.168.184.129:1883", "/formosa/1/Looper", parameter.setParameter("", ""), "/Gateway1/Illuminance2/Illuminance2");
 		lightSensor = new FIMqttLightSensor("tcp://192.168.184.129:1883", "/formosa/1/Illuminance", parameter.setParameter("ameliacreek", "/Gateway1/Illuminance/Illuminance"), "/formosa/1/Looper");
 		number = new FIMqttNumber("tcp://192.168.184.129:1883", "/formosa/1/Number", "/formosa/1/Looper", parameter.setParameter("", ""));
 		lessThanOperator = new FIMqttLessThanOperator("tcp://192.168.184.129:1883", "/formosa/1/LessThanOperator", parameter.setParameter("", ""), "/formosa/1/Number", "/formosa/1/Illuminance");
-		powerSwitch = new FIMqttPowerSwitch("tcp://192.168.184.129:1883", "/formosa/1/PowerSwitch", "/formosa/1/LessThanOperator", parameter.setParameter("ameliacreek", "/Gateway1/Illuminance/Illuminance2"));
+		powerSwitch = new FIMqttPowerSwitch("tcp://192.168.184.129:1883", "/formosa/1/PowerSwitch", "/formosa/1/LessThanOperator", parameter.setParameter("ameliacreek", "/Gateway1/Illuminance2/Illuminance2"));
 
 	/*	while (true) {
 			

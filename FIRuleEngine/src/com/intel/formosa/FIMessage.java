@@ -1,5 +1,6 @@
 package com.intel.formosa;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 /**
@@ -12,6 +13,8 @@ public class FIMessage {
 	public String id;
 
 	public byte[] payload;
+	
+	String payload_str;
 	
 	public FIMessage(String id, byte[] payload) {
 		this.id = id;
@@ -28,7 +31,15 @@ public class FIMessage {
 	
 	@Override
 	public String toString() {
-		return payload.toString();
+		//return payload.toString();
+		try {
+			payload_str = new String(payload , "UTF-8");
+
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return payload_str;
 	}
 	
 	public <T> T value(T defaultValue) {

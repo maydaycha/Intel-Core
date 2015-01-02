@@ -9,7 +9,8 @@ public class FIMqttNumber extends FIMqttSource {
 	public FIMqttNumber(String uri, String name, String source, FIParams params) {
 		super(uri, name, params, source);
 		
-		mNumber = params.getParameter("constant", 0.0f);
+		mNumber = params.getParameter("constant", 1);
+		start();
 	}
 
 	@Override

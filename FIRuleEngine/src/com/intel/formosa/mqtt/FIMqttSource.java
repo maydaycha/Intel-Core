@@ -1,6 +1,10 @@
 package com.intel.formosa.mqtt;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import com.intel.formosa.FIMessage;
 import com.intel.formosa.FISource;
@@ -17,6 +21,8 @@ public abstract class FIMqttSource extends FIMqttObject implements FISource {
 	protected final String mSource;
 	protected final String ACSource;
 	protected boolean flag = false;
+	FIMessage  ACmessage = null;
+
 	
 	public FIMqttSource(String uri, String name, FIParams params, String source) {
 		super(uri, name, params);
@@ -24,13 +30,14 @@ public abstract class FIMqttSource extends FIMqttObject implements FISource {
 		mSource = source;
 		ACSource = params.getParameter("ameliacreek", "");
 		
+	
 	}
 
 	@Override
 	public void start() {
 		try {
 			if (mMqttClient != null) {
-				System.out.println("subscribe");
+			//	System.out.println("a message arrived");
 		        mMqttClient.subscribe(mSource);	 
 		        mMqttClient.subscribe(ACSource);	
 			}
@@ -53,21 +60,19 @@ public abstract class FIMqttSource extends FIMqttObject implements FISource {
 
 	@Override
 	public void onFIMessageArrived(FIMessage message) {
-		System.out.println("onFIMessageArrived");
 		
-		if (mSource.equals(message.id)) {
-			flag = true;
+		
+		if (mSource.equals(message.id)) { 
+			
+			sink(message.value(0.0f));
+		//	System.out.println("mSource arrived");
 		}
 		
-		if (ACSource.equals(message.id)) {
+		if (ACSource.equals(message.id)) {  
 			
-			if(flag){
-			sink(message.value(0.0f));
-			flag = false;
-			}
+		//	System.out.println("ACSource arrived");
+			ACmessage = message;
 			
-			System.out.println("ID : " + message.id);
-			System.out.println("Content : " + message.payload);
 		}
 	}
 	

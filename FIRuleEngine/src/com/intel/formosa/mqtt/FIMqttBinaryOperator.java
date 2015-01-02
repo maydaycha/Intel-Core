@@ -18,8 +18,8 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 	protected final String mRhs;
 	boolean flag_lhs = false;
 	boolean flag_rhs = false;
-	float lhs_v = 0;
-	float rhs_v = 0;
+	Integer lhs_v = 0;
+	Integer rhs_v = 0;
 
 	
 	public FIMqttBinaryOperator(String uri, String name, FIParams params, String lhs, String rhs) {
@@ -33,7 +33,6 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 	public void start() {
 		try {
 			if (mMqttClient != null) {
-				System.out.println("subscribe2");
 		        mMqttClient.subscribe(mLhs);	        
 		        mMqttClient.subscribe(mRhs);
 			}
@@ -59,16 +58,25 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 		// TODO: Develop FSM to determine whether or not all parameters are received.
 			
 		System.out.println("BB : " + mLhs);
-		System.out.println("cc : " + (message == null));
+		System.out.println("DD : " + mRhs);
+		System.out.println("message.id : " + message.id);
+		
 		if (message != null) {
-			if(message.id == mLhs){
+			
+			System.out.println("mLhs = "+message.id.equals(mLhs));
+			System.out.println("mRhs = "+message.id.equals(mRhs));
+
+			
+			if(message.id.equals(mLhs)){
 				flag_lhs = true;
-			    lhs_v = Integer.valueOf(message.payload.toString());
+			    lhs_v = Integer.valueOf(message.toString());
+			    System.out.println("bb : " + lhs_v);
 			}
 			
-			if(message.id == mRhs){
+			if(message.id.equals(mRhs)){
 				flag_rhs = true;
-				rhs_v = Integer.valueOf(message.payload.toString());
+				rhs_v = Integer.valueOf(message.toString());
+				System.out.println("dd : " + rhs_v);
 			}
 			
 			if(flag_lhs && flag_rhs)

@@ -11,12 +11,15 @@ public class FIMqttLooper extends FIMqttOperator {
 	
 	public FIMqttLooper(String uri, String name, FIParams params, String ... sources) {
 		super(uri, name, params, sources);
-		System.out.println("FIMqttLooper : " + name);
+		start();
+		
+				run();
+		
 	}
 
 	@Override
 	public <T extends Number> void run(T ... unused) {		
-				
+		
 			publish();			
 	}
 

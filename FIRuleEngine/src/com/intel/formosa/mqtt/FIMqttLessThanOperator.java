@@ -16,8 +16,6 @@ import com.intel.formosa.params.FIParams;
 public class FIMqttLessThanOperator extends FIMqttBinaryOperator {
 
 	
-	
-	
 	public FIMqttLessThanOperator(String uri, String name, FIParams params, String lhs, String rhs) {
 		super(uri, name, params, lhs, rhs);
 		start();

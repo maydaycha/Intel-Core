@@ -11,24 +11,26 @@ import com.intel.formosa.params.FIParams;
 * @author Shao-Wen Yang <shao-wen.yang@intel.com>
 *
 */
+
 public abstract class FIMqttOperator extends FIMqttObject implements FIOperator {
 	
 	protected final String[] mSources;
 	protected final String[] mSources_get;
 	int sum = 0;
+	String Name = null;
 	
 	public FIMqttOperator(String uri, String name, FIParams params, String ... sources) {
 		super(uri, name, params);
 		
+		Name = name;
+
 		mSources = new String[sources.length];
 		mSources_get = new String[sources.length];
-		
 		
 		for (int j = 0; j < mSources.length; ++j) {
 			mSources_get[j] = "0";
 		}
 		
-
 		System.arraycopy(sources, 0, mSources, 0, sources.length);
 	}
 
@@ -76,7 +78,6 @@ public abstract class FIMqttOperator extends FIMqttObject implements FIOperator 
 			sum = Integer.parseInt(mSources_get[i]);
 		}	
 		
-		
 		if(sum == mSources.length){
 			
 			float[] f = new float[sum];
@@ -91,9 +92,5 @@ public abstract class FIMqttOperator extends FIMqttObject implements FIOperator 
 		
 		sum =0;
 	}
-
-		
-		
-	
 
 }
