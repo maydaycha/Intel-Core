@@ -6,6 +6,7 @@ import java.util.Arrays;
 /**
 *
 * @author Shao-Wen Yang <shao-wen.yang@intel.com>
+* @author Ren-Jie Wu <ren-jie.wu@intel.com>
 *
 */
 public class FIMessage {
@@ -13,8 +14,6 @@ public class FIMessage {
 	public String id;
 
 	public byte[] payload;
-	
-	String payload_str;
 	
 	public FIMessage(String id, byte[] payload) {
 		this.id = id;
@@ -31,25 +30,20 @@ public class FIMessage {
 	
 	@Override
 	public String toString() {
-		//return payload.toString();
+		String obj = null;
+		
 		try {
-			payload_str = new String(payload , "UTF-8");
-
+			obj = new String(payload , "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
 		}
-		return payload_str;
+		
+		return obj;
 	}
 	
 	public <T> T value(T defaultValue) {
-		String obj = null;
-		try {
-			obj = new String(payload , "UTF-8");
-		} catch (UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		String obj = toString();
+		
 		if (obj != null) {
 			try {
 				if (defaultValue instanceof String) {
@@ -78,8 +72,7 @@ public class FIMessage {
 			} catch (ClassCastException e) {
 				return defaultValue;
 			}
-		}
-		else {
+		} else {
 			return defaultValue;
 		}
 	}

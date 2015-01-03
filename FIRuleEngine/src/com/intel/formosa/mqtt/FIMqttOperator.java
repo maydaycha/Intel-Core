@@ -1,5 +1,7 @@
 package com.intel.formosa.mqtt;
 
+import java.util.HashSet;
+
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import com.intel.formosa.FIMessage;
@@ -15,21 +17,14 @@ import com.intel.formosa.params.FIParams;
 public abstract class FIMqttOperator extends FIMqttObject implements FIOperator {
 	
 	protected final String[] mSources;
-	protected Boolean[] mSources_get;
-	int sum = 0;
-	String Name = null;
+	
+	private HashSet<String> mReceived;
 	
 	public FIMqttOperator(String uri, String name, FIParams params, String ... sources) {
-		super(uri, name, params);
-		
-		Name = name;
+		super(uri, name, params);		
 
 		mSources = new String[sources.length];
-		mSources_get = new Boolean[sources.length];
-		
-		for (int j = 0; j < mSources.length; ++j) {
-			mSources_get[j] = false;
-		}
+		mReceived = new HashSet<String>();
 		
 		System.arraycopy(sources, 0, mSources, 0, sources.length);
 	}
@@ -61,23 +56,14 @@ public abstract class FIMqttOperator extends FIMqttObject implements FIOperator 
 	}
 
 	@Override
-	public void onFIMessageArrived(FIMessage message) {		
+	public void onFIMessageArrived(FIMessage message) {			
+		if (!mReceived.contains(message.id)) {
+			mReceived.add(message.id);
+		}
 		
-		// TODO: Develop FSM to determine whether or not all parameters are received.
-		// TODO: Replace the following placeholder.
-		
-		for (int i = 0; i < mSources.length; ++i) {
-	        
-			if(message.id.equals(mSources[i]))
-				mSources_get[i] = true;	     
-			
-			if(mSources_get[i])
-				sum = sum + 1;
-	    }
-		
-		if(sum == mSources.length){
-				run();			
-				sum = 0;
+		if (mReceived.size() >= mSources.length) {
+			run();
+			mReceived.clear();
 		}
 	}
 

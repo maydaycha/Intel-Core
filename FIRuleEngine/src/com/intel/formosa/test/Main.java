@@ -1,6 +1,4 @@
-import com.intel.formosa.*;
-import com.intel.formosa.mqtt.*;
-import com.intel.formosa.params.*;
+package com.intel.formosa.test;
 
 public class Main {	
 

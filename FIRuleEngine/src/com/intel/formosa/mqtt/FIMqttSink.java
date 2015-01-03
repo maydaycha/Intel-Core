@@ -45,12 +45,9 @@ public abstract class FIMqttSink extends FIMqttObject implements FISink {
 	}
 
 	@Override
-	public void onFIMessageArrived(FIMessage message) {	
-		
-		if (mSource.equals(message.id)) {
-			source(message.value(0.0));
-			publish();
-		}
+	public void onFIMessageArrived(FIMessage message) {		
+		source(message.value(0.0));
+		publish();
 	}
 
 }

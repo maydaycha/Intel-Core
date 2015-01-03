@@ -78,7 +78,7 @@ public abstract class FIMqttObject implements FIObject, FIMqttPublisher, MqttCal
     
     @Override
     public void publish(FIMessage message) {
-    	if (mMqttClient != null && mMqttClient.isConnected()) {    	
+    	if (mMqttClient != null && mMqttClient.isConnected() && !message.id.isEmpty()) {    	
 	    	MqttMessage mqttMessage = new MqttMessage(message.payload);
 	    	try {
 	        	mqttMessage.setQos(1);
@@ -112,7 +112,6 @@ public abstract class FIMqttObject implements FIObject, FIMqttPublisher, MqttCal
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) {
-
 		onFIMessageArrived(new FIMessage(topic, message.toString().getBytes()));
 	}
 
