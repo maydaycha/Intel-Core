@@ -39,12 +39,12 @@ public class Go implements Runnable {
 	public void run() {
 		// TODO Auto-generated method stub
 		
-		FIConfigParams parameter = new FIConfigParams(); 
-		looper = new FIMqttLooper("tcp://192.168.184.129:1883", "/formosa/1/Looper", parameter.setParameter("", ""), "/Gateway1/Illuminance2/Illuminance2");
-		lightSensor = new FIMqttLightSensor("tcp://192.168.184.129:1883", "/formosa/1/Illuminance", parameter.setParameter("ameliacreek", "/Gateway1/Illuminance/Illuminance"), "/formosa/1/Looper");
-		number = new FIMqttNumber("tcp://192.168.184.129:1883", "/formosa/1/Number", "/formosa/1/Looper", parameter.setParameter("", ""));
-		lessThanOperator = new FIMqttLessThanOperator("tcp://192.168.184.129:1883", "/formosa/1/LessThanOperator", parameter.setParameter("", ""), "/formosa/1/Number", "/formosa/1/Illuminance");
-		powerSwitch = new FIMqttPowerSwitch("tcp://192.168.184.129:1883", "/formosa/1/PowerSwitch", "/formosa/1/LessThanOperator", parameter.setParameter("ameliacreek", "/Gateway1/Illuminance2/Illuminance2"));
+		//FIConfigParams parameter = new FIConfigParams(); 
+		looper = new FIMqttLooper("tcp://192.168.184.129:1883", "/formosa/1/Looper", new FIConfigParams(), "/formosa/1/PowerSwitch");
+		lightSensor = new FIMqttLightSensor("tcp://192.168.184.129:1883", "/formosa/1/Illuminance", new FIConfigParams().setParameter("ameliacreek", "/Gateway1/Illuminance/Illuminance"), "/formosa/1/Looper");
+		number = new FIMqttNumber("tcp://192.168.184.129:1883", "/formosa/1/Number", new FIConfigParams(), "/formosa/1/Looper");
+		lessThanOperator = new FIMqttLessThanOperator("tcp://192.168.184.129:1883", "/formosa/1/LessThanOperator", new FIConfigParams(), "/formosa/1/Number", "/formosa/1/Illuminance");
+		powerSwitch = new FIMqttPowerSwitch("tcp://192.168.184.129:1883", "/formosa/1/PowerSwitch", "/formosa/1/LessThanOperator", new FIConfigParams().setParameter("ameliacreek", "/Gateway1/OnOff/OnOff"));
 
 	/*	while (true) {
 			
@@ -57,6 +57,12 @@ public class Go implements Runnable {
 				e.printStackTrace();
 			}
 		} */
+		looper.start();
+		lightSensor.start();
+		number.start();
+		lessThanOperator.start();
+		powerSwitch.start();
+		looper.run();
 	} 
 	
 }

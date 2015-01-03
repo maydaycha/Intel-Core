@@ -18,8 +18,9 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 	protected final String mRhs;
 	boolean flag_lhs = false;
 	boolean flag_rhs = false;
-	Integer lhs_v = 0;
-	Integer rhs_v = 0;
+	int state = 0;  // 0 or 1 or 2
+	Float lhs_v = 0.0f;
+	Float rhs_v = 0.0f;
 
 	
 	public FIMqttBinaryOperator(String uri, String name, FIParams params, String lhs, String rhs) {
@@ -56,36 +57,51 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 	@Override
 	public void onFIMessageArrived(FIMessage message) {		
 		// TODO: Develop FSM to determine whether or not all parameters are received.
-			
-		System.out.println("BB : " + mLhs);
-		System.out.println("DD : " + mRhs);
-		System.out.println("message.id : " + message.id);
+		// TODO: Replace the following placeholder.
 		
-		if (message != null) {
-			
-			System.out.println("mLhs = "+message.id.equals(mLhs));
-			System.out.println("mRhs = "+message.id.equals(mRhs));
-
-			
+		if (message != null && state == 0) {
 			if(message.id.equals(mLhs)){
-				flag_lhs = true;
-			    lhs_v = Integer.valueOf(message.toString());
-			    System.out.println("bb : " + lhs_v);
+
+				state = 1;
+			    lhs_v = Float.parseFloat(message.toString());
 			}
 			
 			if(message.id.equals(mRhs)){
-				flag_rhs = true;
-				rhs_v = Integer.valueOf(message.toString());
-				System.out.println("dd : " + rhs_v);
+
+				state = 2;
+				rhs_v = Float.parseFloat(message.toString());
 			}
-			
-			if(flag_lhs && flag_rhs)
-				run(lhs_v, rhs_v);
-		
-		// TODO: Replace the following placeholder.
 		}
 		
+		if (message != null && state == 1) {
+			if(message.id.equals(mLhs)){
 
+				state = 1;
+			    lhs_v = Float.parseFloat(message.toString());
+			}
+			
+			if(message.id.equals(mRhs)){
+				
+				state = 0;
+				rhs_v = Float.parseFloat(message.toString());
+				run(lhs_v, rhs_v);
+			}
+		}
+		
+		if (message != null && state == 2) {
+			
+			if(message.id.equals(mLhs)){
+
+				state = 0;
+			    lhs_v = Float.parseFloat(message.toString());
+			    run(lhs_v, rhs_v);
+			}
+			
+			if(message.id.equals(mRhs)){
+				
+				state = 2;
+				rhs_v = Float.parseFloat(message.toString());
+			}	
+		}
 	}
-	
 }

@@ -14,8 +14,8 @@ import com.intel.formosa.params.FIParams;
 */
 public class FIMqttPowerSwitch extends FIMqttSink {
 	
-	FIMessage message;
-
+	
+	int i = 1;
 	String topic =  null;
 	
 	
@@ -24,23 +24,18 @@ public class FIMqttPowerSwitch extends FIMqttSink {
 		
 		// TODO: Use parameters to configure light switch
 		topic = params.getParameter("ameliacreek", "");
-		start();
-		
 	}
 
 	@Override
 	public <T extends Number> void source(T number) {	
 		
 		// TODO: Read in light switch control.
-		
-		ByteBuffer b = ByteBuffer.allocateDirect(4);
-		b.putInt((int)number);
 		// TODO: Control the light switch accordingly.
-		
-		message.id = topic;
-		message.payload = b.array();
+		FIMessage message = new FIMessage(topic, number);
 		publish(message);
 		
+		System.out.println("Round["+i+"] done");
+		i++;
 	}
 
 }

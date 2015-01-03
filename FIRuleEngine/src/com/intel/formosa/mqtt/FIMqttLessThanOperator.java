@@ -18,24 +18,25 @@ public class FIMqttLessThanOperator extends FIMqttBinaryOperator {
 	
 	public FIMqttLessThanOperator(String uri, String name, FIParams params, String lhs, String rhs) {
 		super(uri, name, params, lhs, rhs);
-		start();
 		
 	}
 
 	@Override
 	public <T extends Number> void run(T ... numbers) {
 		assert numbers.length >= 2;
-		
-		float output = 0;
-			// TODO: Implement less than logic rule.
-			if(lhs_v < rhs_v){
-				output  = 1;				
-			}
-			else
-				output = 0;
 		// TODO: Replace the following placeholder.
+		// TODO: Implement less than logic rule.
 		
+		int output = 0;
+			
+		if((float)lhs_v < (float)rhs_v)
+				output  = 1;				
+		else
+				output = 0;
+		
+	//	System.out.println("(float)lhs_v = " + (float)lhs_v);
+	//	System.out.println("(float)rhs_v = " + (float)rhs_v);
+	
     	publish(output);
 	}
-
 }

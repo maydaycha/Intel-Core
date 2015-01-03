@@ -112,8 +112,7 @@ public abstract class FIMqttObject implements FIObject, FIMqttPublisher, MqttCal
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) {
-		
-		//System.out.println("Message Arrived!, Topic : " + topic + "Content is "  + message.getPayload());
+
 		onFIMessageArrived(new FIMessage(topic, message.toString().getBytes()));
 	}
 

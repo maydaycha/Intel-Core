@@ -20,26 +20,23 @@ public class FIMqttLightSensor extends FIMqttSource {
 
 		// TODO: Use parameters to configure light sensor
 
-		start(); 
+		
 
 	}
 
 	@Override
 	public <T extends Number> void sink(T number) {		
-		
+	      	
 		// TODO: Read in light sensor reading here.
+		// TODO: Construct the message and send with publish().
 			if(ACmessage != null)
 			{
-		/*		// TODO: Construct the message and send with publish().
-		 * 		
+				/*	
 				ByteBuffer b = ByteBuffer.allocateDirect(4);
 				b.putInt((int)number);
-				// TODO: Control the light switch accordingly.
+				 */
 				
-				System.out.println("OOXX : " + b.array()); */
-				System.out.println("sensor reading : " + ACmessage);
-				publish(ACmessage);
-				
+				publish(ACmessage.toString());	
 			}
 	}
 

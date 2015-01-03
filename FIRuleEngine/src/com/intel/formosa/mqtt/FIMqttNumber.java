@@ -6,15 +6,16 @@ public class FIMqttNumber extends FIMqttSource {
 	
 	private final float mNumber;
 
-	public FIMqttNumber(String uri, String name, String source, FIParams params) {
+	public FIMqttNumber(String uri, String name,  FIParams params, String source) {
 		super(uri, name, params, source);
 		
-		mNumber = params.getParameter("constant", 1);
-		start();
+		mNumber = params.getParameter("constant", 2);
+		
 	}
 
 	@Override
-	public <T extends Number> void sink(T unused) {		
+	public <T extends Number> void sink(T unused) {	
+		
 		publish(mNumber);
 	}
 

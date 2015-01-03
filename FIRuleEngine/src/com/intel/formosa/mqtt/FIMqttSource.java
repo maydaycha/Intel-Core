@@ -22,24 +22,26 @@ public abstract class FIMqttSource extends FIMqttObject implements FISource {
 	protected final String ACSource;
 	protected boolean flag = false;
 	FIMessage  ACmessage = null;
-
+	
 	
 	public FIMqttSource(String uri, String name, FIParams params, String source) {
-		super(uri, name, params);
 		
+		super(uri, name, params);
 		mSource = source;
 		ACSource = params.getParameter("ameliacreek", "");
-		
-	
+
 	}
 
 	@Override
 	public void start() {
 		try {
 			if (mMqttClient != null) {
-			//	System.out.println("a message arrived");
-		        mMqttClient.subscribe(mSource);	 
-		        mMqttClient.subscribe(ACSource);	
+				
+		        mMqttClient.subscribe(mSource);	
+		        
+		        if(!ACSource.isEmpty())
+		        mMqttClient.subscribe(ACSource);
+		       
 			}
 		} catch (MqttException e) {
 			
@@ -51,6 +53,8 @@ public abstract class FIMqttSource extends FIMqttObject implements FISource {
 		try {
 			if (mMqttClient != null) {       
 		        mMqttClient.unsubscribe(mSource);
+		        
+		        if(!ACSource.isEmpty())
 		        mMqttClient.unsubscribe(ACSource);
 			}
 		} catch (MqttException e) {
@@ -61,18 +65,15 @@ public abstract class FIMqttSource extends FIMqttObject implements FISource {
 	@Override
 	public void onFIMessageArrived(FIMessage message) {
 		
-		
 		if (mSource.equals(message.id)) { 
-			
+
 			sink(message.value(0.0f));
-		//	System.out.println("mSource arrived");
 		}
 		
 		if (ACSource.equals(message.id)) {  
-			
-		//	System.out.println("ACSource arrived");
+		
 			ACmessage = message;
-			
+			sink(message.value(0.0f));
 		}
 	}
 	

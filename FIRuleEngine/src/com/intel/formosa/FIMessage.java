@@ -43,7 +43,13 @@ public class FIMessage {
 	}
 	
 	public <T> T value(T defaultValue) {
-		String obj = payload.toString();
+		String obj = null;
+		try {
+			obj = new String(payload , "UTF-8");
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		if (obj != null) {
 			try {
 				if (defaultValue instanceof String) {

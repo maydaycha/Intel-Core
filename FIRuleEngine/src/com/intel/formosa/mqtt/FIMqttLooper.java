@@ -11,10 +11,7 @@ public class FIMqttLooper extends FIMqttOperator {
 	
 	public FIMqttLooper(String uri, String name, FIParams params, String ... sources) {
 		super(uri, name, params, sources);
-		start();
-		
-				run();
-		
+
 	}
 
 	@Override
