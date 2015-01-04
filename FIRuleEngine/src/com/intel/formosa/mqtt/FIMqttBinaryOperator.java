@@ -18,8 +18,8 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 	protected final String mRhs;
 
 	private int state = 0;  // 0 or 1 or 2
-	private float lhs_v = 0.0f;
-	private float rhs_v = 0.0f;
+	private double lhs_v = 0.0;
+	private double rhs_v = 0.0;
 
 	
 	public FIMqttBinaryOperator(String uri, String name, FIParams params, String lhs, String rhs) {
@@ -57,18 +57,18 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 	public void onFIMessageArrived(FIMessage message) {		
 		// TODO: Develop FSM to determine whether or not all parameters are received.
 		// TODO: Replace the following placeholder.
-		
+
 		if (message != null && state == 0) {
 			if(message.id.equals(mLhs)){
 
 				state = 1;
-			    lhs_v = Float.parseFloat(message.toString());
+			    lhs_v = message.value(lhs_v);
 			}
 			
 			if(message.id.equals(mRhs)){
 
 				state = 2;
-				rhs_v = Float.parseFloat(message.toString());
+				rhs_v = message.value(rhs_v);
 			}
 		}
 		
@@ -76,13 +76,13 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 			if(message.id.equals(mLhs)){
 
 				state = 1;
-			    lhs_v = Float.parseFloat(message.toString());
+			    lhs_v = message.value(lhs_v);
 			}
 			
 			if(message.id.equals(mRhs)){
 				
 				state = 0;
-				rhs_v = Float.parseFloat(message.toString());
+				rhs_v = message.value(rhs_v);
 				run(lhs_v, rhs_v);
 			}
 		}
@@ -92,14 +92,14 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 			if(message.id.equals(mLhs)){
 
 				state = 0;
-			    lhs_v = Float.parseFloat(message.toString());
+			    lhs_v = message.value(lhs_v);
 			    run(lhs_v, rhs_v);
 			}
 			
 			if(message.id.equals(mRhs)){
 				
 				state = 2;
-				rhs_v = Float.parseFloat(message.toString());
+				rhs_v = message.value(rhs_v);
 			}	
 		}
 	}

@@ -57,7 +57,7 @@ public class Go implements Runnable {
 		number = new FIMqttNumber(
 				"tcp://192.168.184.129:1883",
 				"/formosa/1/Number",
-				new FIConfigParams(), 
+				new FIConfigParams().setParameter("constant", 1), 
 				"/formosa/1/Looper");
 		lessThanOperator = new FIMqttLessThanOperator(
 				"tcp://192.168.184.129:1883",

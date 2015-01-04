@@ -14,10 +14,9 @@ import com.intel.formosa.params.FIParams;
 public abstract class FIMqttSource extends FIMqttObject implements FISource {	
 	
 	protected final String mSource;	
-	
+	String mname = null;
 	public FIMqttSource(String uri, String name, FIParams params, String source) {		
 		super(uri, name, params);
-		
 		mSource = source;
 	}
 
@@ -43,9 +42,12 @@ public abstract class FIMqttSource extends FIMqttObject implements FISource {
 		}
 	}
 
-	@Override
+/*	@Override
 	public void onFIMessageArrived(FIMessage message) {
-		sink(message.value(0.0));
-	}
+	
+		if (mSource.equals(message.id))
+		sink(message.value(0));
+
+	}  */
 	
 }

@@ -43,8 +43,8 @@ public class FIMessage {
 	
 	public <T> T value(T defaultValue) {
 		String obj = toString();
-		
-		if (obj != null) {
+
+		if (obj != null && !obj.isEmpty()) {
 			try {
 				if (defaultValue instanceof String) {
 					@SuppressWarnings("unchecked")

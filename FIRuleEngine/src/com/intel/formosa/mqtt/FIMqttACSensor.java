@@ -13,6 +13,8 @@ import com.intel.formosa.params.FIParams;
 public class FIMqttACSensor extends FIMqttSource {
 	
 	private final String mACSource;
+	
+	private double mValue;
 
 	public FIMqttACSensor(String uri, String name, FIParams params, String source) {
 		super(uri, name, params, source);
@@ -51,11 +53,11 @@ public class FIMqttACSensor extends FIMqttSource {
 	}
 
 	@Override
-	public void onFIMessageArrived(FIMessage message) {	
+	public void onFIMessageArrived(FIMessage message) {
 		if (mACSource.equals(message.id)) {
-			sink(message.value(0.0));
+			mValue = message.value(0.0);
 		} else {
-			super.onFIMessageArrived(message);
+			sink(mValue);
 		}
 	}
 
