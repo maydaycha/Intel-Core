@@ -19,8 +19,10 @@ public class Go implements Runnable {
 	FIMqttLooper looper;
 	
 	FIMqttObject Illuminance;
+	FIMqttObject Occupancy;
 	FIMqttObject number;
 	FIMqttObject lessThanOperator;
+	FIMqttObject lessEqualThanOperator;
 	FIMqttObject powerSwitch;
 	JSONArray jsonarray;
 	/*
@@ -47,9 +49,8 @@ public class Go implements Runnable {
 	public Go(JSONArray jsonarray) {
 		// TODO Auto-generated constructor stub
 		this.jsonarray = jsonarray;
+		
 	}
-
-
 
 	@Override
 	public void run() {
@@ -59,52 +60,63 @@ public class Go implements Runnable {
 			
 			for (Object o : jsonarray)
 			  {
-				
+					//System.out.println(o);
 					JSONObject object = (JSONObject) o;
-					JSONArray a = (JSONArray) object.get("wire");
-			    
-					switch(object.get("type").toString()){
+					JSONArray a = (JSONArray) object.get("wires");
 					
-					 
-						case ("IlluminanceMeasurement_S"):
+					switch(object.get("type").toString()){
 							
-							
-							
-							Illuminance = new FIMqttACSensor(
-									"tcp://192.168.184.129:1883",
-									"/formosa/"+object.get("z")+"/"+object.get("id"), 
-									new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
-									"/formosa/"+object.get("z")+"/Looper");
-						Illuminance.start();
-						
 						case ("Meter_S"):
-							
+						
+							System.out.println("case Meter_S");
+					
 							powerSwitch = new FIMqttACActuator(
 									"tcp://192.168.184.129:1883",
 									"/formosa/"+object.get("z")+object.get("id"),
 									new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
-									"/formosa/"+object.get("z")+"/"+a.get(0));
-							powerSwitch.start();
+									"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
 							
+							powerSwitch.start();
+						
 							looper = new FIMqttLooper(
 									"tcp://192.168.184.129:1883",
 									"/formosa/"+object.get("z")+"/Looper",
 									new FIConfigParams(),
 									"/formosa/"+object.get("z")+object.get("id"));
 							looper.start();
+						break;
+					
+						case ("LessEqualThan"):
+
+							System.out.println("case LessThan");
+							parameters.is_equal = true;
+							lessEqualThanOperator = new FIMqttLessThanOperator(
+									"tcp://192.168.184.129:1883",
+									"/formosa/"+object.get("z")+"/"+object.get("id"),
+									new FIConfigParams(),
+									"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
+									"/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
+							
+							lessEqualThanOperator.start();
+							break;
 							
 						case ("LessThan"):
 							
+							System.out.println("case LessThan");
+							parameters.is_equal = false;
 							lessThanOperator = new FIMqttLessThanOperator(
 									"tcp://192.168.184.129:1883",
 									"/formosa/"+object.get("z")+"/"+object.get("id"),
 									new FIConfigParams(),
-									"/formosa/"+object.get("z")+"/"+a.get(0),
-									"/formosa/"+object.get("z")+"/"+a.get(1));
-							lessThanOperator.start();
+									"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
+									"/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
 							
+							lessThanOperator.start();
+							break;
 							
 						case("Number"):
+						
+							System.out.println("case Number");
 							
 							number = new FIMqttNumber(
 									"tcp://192.168.184.129:1883",
@@ -112,6 +124,34 @@ public class Go implements Runnable {
 									new FIConfigParams().setParameter("constant", object.get("value")), 
 									"/formosa/"+object.get("z")+"/Looper");
 							number.start();
+							break;
+						
+						case ("IlluminanceMeasurement_S"):
+						
+							System.out.println("case IlluminanceMeasurement_S");
+						
+							Illuminance = new FIMqttACSensor(
+									"tcp://192.168.184.129:1883",
+									"/formosa/"+object.get("z")+"/"+object.get("id"), 
+									new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
+									"/formosa/"+object.get("z")+"/Looper");
+							Illuminance.start();
+							System.out.println("case end");
+							break;
+							
+						case ("OccupancySensing_S"):
+							
+							System.out.println("case OccupancySensing_S");
+						
+							Occupancy = new FIMqttACSensor(
+									"tcp://192.168.184.129:1883",
+									"/formosa/"+object.get("z")+"/"+object.get("id"), 
+									new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
+									"/formosa/"+object.get("z")+"/Looper");
+							Occupancy.start();
+							System.out.println("case end");
+							break;
+							
 					} 			
 			  }
 			  
