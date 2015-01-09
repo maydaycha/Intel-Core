@@ -15,18 +15,21 @@ import com.intel.formosa.params.FIConfigParams;
 
 public class Go implements Runnable {
 
-	
-	FIMqttLooper looper;
-	
-	FIMqttObject Illuminance = null;
-	FIMqttObject Temperature = null;
-	FIMqttObject number = null;
-	FIMqttObject lessThanOperator = null;
-	FIMqttObject lessEqualThanOperator = null;
-	FIMqttObject EqualOperator = null;
-	FIMqttObject powerSwitch = null;
-	FIMqttObject WarningDevice = null;
-	JSONArray jsonarray = null;
+
+    FIMqttLooper looper;
+
+    FIMqttObject Illuminance = null;
+    FIMqttObject Temperature = null;
+    FIMqttObject number = null;
+    FIMqttObject lessThanOperator = null;
+    FIMqttObject lessEqualThanOperator = null;
+    FIMqttObject EqualOperator = null;
+    FIMqttObject powerSwitch = null;
+    FIMqttObject WarningDevice = null;
+    JSONArray jsonarray = null;
+    Parameters parameters = null;
+
+
 	
 	/*
 	public Go(String sessionId) {
@@ -46,16 +49,17 @@ public class Go implements Runnable {
 		lessThanOperator = new FIMqttLessThanOperator("tcp://192.168.184.129:1883", "/formosa/1/LessThanOperator/", parameter.setParameter("", ""), "/formosa/1/Number/", "/formosa/1/Illuminance/");
 		powerSwitch = new FIMqttPowerSwitch("tcp://192.168.184.129:1883", "/formosa/1/PowerSwitch", "/formosa/1/LessThanOperator/", parameter.setParameter("ameliacreek", "/Gateway1/Illuminance/Illuminance2"));
 	} */
-	
-	
-	
-	public Go(JSONArray jsonarray) {
-		// TODO Auto-generated constructor stub
-		this.jsonarray = jsonarray;
-		
-	}
-	
-	public enum Nodes {
+
+
+
+    public Go(JSONArray jsonarray) {
+        // TODO Auto-generated constructor stub
+        this.jsonarray = jsonarray;
+        parameters = new Parameters();
+
+    }
+
+    public enum Nodes {
         Meter_S("Meter_S"),
         IASWD_S("IASWD_S"),
         LessEqualThan("LessEqualThan"),
@@ -86,139 +90,149 @@ public class Go implements Runnable {
         }
     }
 
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		if(jsonarray != null){
-		//FIConfigParams parameter = new FIConfigParams(); 
-			for (Object o : jsonarray)
-			  {
-					//System.out.println(o);
-					JSONObject object = (JSONObject) o;
-					JSONArray a = (JSONArray) object.get("wires");
-					
-					switch(Nodes.getByName(object.get("type").toString())){
-							
-						case Meter_S:
-						
-							System.out.println("case Meter_S");
-					
-							powerSwitch = new FIMqttACActuator(
-									"tcp://192.168.184.129:1883",
-									"/formosa/"+object.get("z")+"/"+object.get("id"),
-									new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
-									"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
-							
-							powerSwitch.start();
-						
-							looper = new FIMqttLooper(
-									"tcp://192.168.184.129:1883",
-									"/formosa/"+object.get("z")+"/Looper",
-									new FIConfigParams(),
-									"/formosa/"+object.get("z")+"/"+object.get("id"));
-							looper.start();
-						break;
-						
-						case IASWD_S:
-							
-							System.out.println("case IASWD_S");
-							parameters.Alarm = true;
-						
-							WarningDevice = new FIMqttACActuator(
-								"tcp://192.168.184.129:1883",
-								"/formosa/"+object.get("z")+"/"+object.get("id"),
-								new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
-								"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
-						
-							WarningDevice.start();
-					
-							looper = new FIMqttLooper(
-								"tcp://192.168.184.129:1883",
-								"/formosa/"+object.get("z")+"/Looper",
-								new FIConfigParams(),
-								"/formosa/"+object.get("z")+"/"+object.get("id"));
-							looper.start();
-						break;
-					
-						case LessEqualThan:
+    @Override
+    public void run() {
+        // TODO Auto-generated method stub
+        if(jsonarray != null){
+            //FIConfigParams parameter = new FIConfigParams();
+            for (Object o : jsonarray)
+            {
+                //System.out.println(o);
+                JSONObject object = (JSONObject) o;
+                JSONArray a = (JSONArray) object.get("wires");
+                String operator = null; 
+                boolean Alarm = false;
 
-							System.out.println("case LessThan");
-							parameters.compare = "LessEqualThan";
-							lessEqualThanOperator = new FIMqttLessThanOperator(
-									"tcp://192.168.184.129:1883",
-									"/formosa/"+object.get("z")+"/"+object.get("id"),
-									new FIConfigParams(),
-									"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
-									"/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
-							
-							lessEqualThanOperator.start();
-							break;
-							
-						case LessThan:
-							
-							System.out.println("case LessThan");
-						parameters.compare = "LessThan";
-							lessThanOperator = new FIMqttLessThanOperator(
-									"tcp://192.168.184.129:1883",
-									"/formosa/"+object.get("z")+"/"+object.get("id"),
-									new FIConfigParams(),
-									"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
-									"/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
-							
-							lessThanOperator.start();
-							break;
-							
-						case Equal:
+                switch(Nodes.getByName(object.get("type").toString())){
 
-							System.out.println("case Equal");
-							parameters.compare = "Equal";
-							EqualOperator = new FIMqttLessThanOperator(
-									"tcp://192.168.184.129:1883",
-									"/formosa/"+object.get("z")+"/"+object.get("id"),
-									new FIConfigParams(),
-									"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
-									"/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
-							
-							EqualOperator.start();
-							break;	
-						
-						case Number:
-						
-							System.out.println("case Number");
-							
-							number = new FIMqttNumber(
-									"tcp://192.168.184.129:1883",
-									"/formosa/"+object.get("z")+"/"+object.get("id"),
-									new FIConfigParams().setParameter("constant", object.get("value")), 
-									"/formosa/"+object.get("z")+"/Looper");
-							number.start();
-							break;
-						
-						case IlluminanceMeasurement_S:
-						
-							System.out.println("case IlluminanceMeasurement_S : "+object.get("deviceName"));
-						
-							Illuminance = new FIMqttACSensor(
-									"tcp://192.168.184.129:1883",
-									"/formosa/"+object.get("z")+"/"+object.get("id"), 
-									new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
-									"/formosa/"+object.get("z")+"/Looper");
-							Illuminance.start();
-							break;
-							
-						case TemperatureMeasurement_S:
-							
-							System.out.println("case TemperatureMeasurement_S");
-						
-							Temperature = new FIMqttACSensor(
-									"tcp://192.168.184.129:1883",
-									"/formosa/"+object.get("z")+"/"+object.get("id"), 
-									new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
-									"/formosa/"+object.get("z")+"/Looper");
-							Temperature.start();
-							break;							
-					} 			
-			  }
+                    case Meter_S:
+
+                        System.out.println("case Meter_S");
+                        Alarm = false;
+					
+                        powerSwitch = new FIMqttACActuator(
+                                "tcp://192.168.184.129:1883",
+                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
+                                Alarm,
+                                "/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
+
+                        powerSwitch.start();
+
+                        looper = new FIMqttLooper(
+                                "tcp://192.168.184.129:1883",
+                                "/formosa/"+object.get("z")+"/Looper",
+                                new FIConfigParams(),
+                                parameters,
+                                "/formosa/"+object.get("z")+"/"+object.get("id"));
+                        looper.start();
+                        break;
+
+                    case IASWD_S:
+                    	
+                        System.out.println("case IASWD_S");
+                        Alarm = true;
+
+                        WarningDevice = new FIMqttACActuator(
+                                "tcp://192.168.184.129:1883",
+                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
+                                Alarm,
+                                "/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
+
+                        WarningDevice.start();
+
+                        looper = new FIMqttLooper(
+                                "tcp://192.168.184.129:1883",
+                                "/formosa/"+object.get("z")+"/Looper",
+                                new FIConfigParams(),
+                                parameters,
+                                "/formosa/"+object.get("z")+"/"+object.get("id"));
+                        looper.start();
+                        break;
+
+                    case LessEqualThan:
+
+                        System.out.println("case LessThan");
+                        operator = "LessEqualThan";
+                        lessEqualThanOperator = new FIMqttLessThanOperator(
+                                "tcp://192.168.184.129:1883",
+                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                new FIConfigParams(),
+                                operator,
+                                "/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
+                                "/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
+
+                        lessEqualThanOperator.start();
+                        break;
+
+                    case LessThan:
+
+                        System.out.println("case LessThan");
+                        operator = "LessThan";
+                        lessThanOperator = new FIMqttLessThanOperator(
+                                "tcp://192.168.184.129:1883",
+                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                new FIConfigParams(),
+                                operator,
+                                "/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
+                                "/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
+
+                        lessThanOperator.start();
+                        break;
+
+                    case Equal:
+
+                        System.out.println("case Equal");
+                        operator = "Equal";
+                        EqualOperator = new FIMqttLessThanOperator(
+                                "tcp://192.168.184.129:1883",
+                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                new FIConfigParams(),
+                                operator,
+                                "/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
+                                "/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
+
+                        EqualOperator.start();
+                        break;
+
+                    case Number:
+
+                        System.out.println("case Number");
+
+                        number = new FIMqttNumber(
+                                "tcp://192.168.184.129:1883",
+                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                new FIConfigParams().setParameter("constant", object.get("value")),
+                                "/formosa/"+object.get("z")+"/Looper");
+                        number.start();
+                        break;
+
+                    case IlluminanceMeasurement_S:
+
+                        System.out.println("case IlluminanceMeasurement_S");
+
+                        Illuminance = new FIMqttACSensor(
+                                "tcp://192.168.184.129:1883",
+                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
+                                "/formosa/"+object.get("z")+"/Looper");
+                        Illuminance.start();
+                        break;
+
+                    case TemperatureMeasurement_S:
+
+                        System.out.println("case TemperatureMeasurement_S");
+
+                        Temperature = new FIMqttACSensor(
+                                "tcp://192.168.184.129:1883",
+                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
+                                "/formosa/"+object.get("z")+"/Looper");
+                        Temperature.start();
+                        break;
+                }
+            }
 			  
 			
 			
@@ -260,38 +274,43 @@ public class Go implements Runnable {
 				e.printStackTrace();
 			}
 		} */
-	//	looper.start();
-	//	Illuminance.start();
-	//	number.start();
-	//	lessThanOperator.start();
-	//	powerSwitch.start();
-		looper.run();
-		
-		parameters.five_s_alive = true;
-    	while(true){
-    			if(!parameters.five_s_alive){
-    					
-    				 if(Illuminance != null)
-    					 Illuminance.finalize();
-    				 if(Temperature != null)
-    					 Temperature.finalize();
-    				 if(number != null)
-    					 number.finalize();
-    				 if(lessThanOperator != null)
-    					 lessThanOperator.finalize();
-    				 if(lessEqualThanOperator != null)
-    					 lessEqualThanOperator.finalize();
-    				 if(EqualOperator != null)
-    					 EqualOperator.finalize();
-    				 if(powerSwitch != null)
-    					 powerSwitch.finalize();
-    				 if(WarningDevice != null)
-    					 WarningDevice.finalize();
+            //	looper.start();
+            //	Illuminance.start();
+            //	number.start();
+            //	lessThanOperator.start();
+            //	powerSwitch.start();
+            looper.run();
 
-    				break;
-    			}
-    		}
-		} 
-	}
-	
+            parameters.five_s_alive = true;
+            while(true){
+                if(!parameters.five_s_alive){
+
+                    if(Illuminance != null)
+                        Illuminance.finalize();
+                    if(Temperature != null)
+                        Temperature.finalize();
+                    if(number != null)
+                        number.finalize();
+                    if(lessThanOperator != null)
+                        lessThanOperator.finalize();
+                    if(lessEqualThanOperator != null)
+                        lessEqualThanOperator.finalize();
+                    if(EqualOperator != null)
+                        EqualOperator.finalize();
+                    if(powerSwitch != null)
+                        powerSwitch.finalize();
+                    if(WarningDevice != null)
+                        WarningDevice.finalize();
+                    
+                    System.out.println("YA");
+                    break;
+                }
+            }
+        }
+    }
+
+    public void setAliveFlag(boolean alive) {
+        parameters.five_s_alive = alive;
+    }
+
 }

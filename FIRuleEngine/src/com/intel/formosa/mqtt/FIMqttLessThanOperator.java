@@ -1,7 +1,6 @@
 package com.intel.formosa.mqtt;
 
 import com.intel.formosa.params.FIParams;
-import com.intel.formosa.test.parameters;
 
 /**
 *
@@ -10,19 +9,22 @@ import com.intel.formosa.test.parameters;
 */
 public class FIMqttLessThanOperator extends FIMqttBinaryOperator {
 
+    
+    private String Operator = null;
 	
-	public FIMqttLessThanOperator(String uri, String name, FIParams params, String lhs, String rhs) {
-		super(uri, name, params, lhs, rhs);		
+	public FIMqttLessThanOperator(String uri, String name, FIParams params, String operator, String lhs, String rhs) {
+		super(uri, name, params, lhs, rhs);
+		Operator = operator;
 	}
 
 	@Override
 	public <T extends Number> void run(T ... numbers) {
 		assert numbers.length >= 2;
 		
-		if(parameters.compare.equals("LessEqualThan")){
+		if(Operator.equals("LessEqualThan")){
     	publish(numbers[0].floatValue() <= numbers[1].floatValue() ? 1 : 0);
 		}
-    	else if(parameters.compare.equals("LessThan")){
+    	else if(Operator.equals("LessThan")){
 		publish(numbers[0].floatValue() < numbers[1].floatValue() ? 1 : 0);
     	}
 		else{
