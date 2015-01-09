@@ -54,6 +54,37 @@ public class Go implements Runnable {
 		this.jsonarray = jsonarray;
 		
 	}
+	
+	public enum Nodes {
+        Meter_S("Meter_S"),
+        IASWD_S("IASWD_S"),
+        LessEqualThan("LessEqualThan"),
+        LessThan("LessThan"),
+        Equal("Equal"),
+        Number("Number"),
+        IlluminanceMeasurement_S("IlluminanceMeasurement_S"),
+        OccupancySensing_S("OccupancySensing_S"),
+        TemperatureMeasurement_S("TemperatureMeasurement_S");
+
+        private String name;
+
+        Nodes(final String name) {
+            this.name = name;
+        }
+
+        public String toString() {
+            return name;
+        }
+
+        public static Nodes getByName (final String name) {
+            for (Nodes n: Nodes.values()) {
+                if (n.name.equalsIgnoreCase(name)) {
+                    return n;
+                }
+            }
+            return null;
+        }
+    }
 
 	@Override
 	public void run() {
@@ -66,15 +97,15 @@ public class Go implements Runnable {
 					JSONObject object = (JSONObject) o;
 					JSONArray a = (JSONArray) object.get("wires");
 					
-					switch(object.get("type").toString()){
+					switch(Nodes.getByName(object.get("type").toString())){
 							
-						case ("Meter_S"):
+						case Meter_S:
 						
 							System.out.println("case Meter_S");
 					
 							powerSwitch = new FIMqttACActuator(
 									"tcp://192.168.184.129:1883",
-									"/formosa/"+object.get("z")+object.get("id"),
+									"/formosa/"+object.get("z")+"/"+object.get("id"),
 									new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
 									"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
 							
@@ -84,18 +115,18 @@ public class Go implements Runnable {
 									"tcp://192.168.184.129:1883",
 									"/formosa/"+object.get("z")+"/Looper",
 									new FIConfigParams(),
-									"/formosa/"+object.get("z")+object.get("id"));
+									"/formosa/"+object.get("z")+"/"+object.get("id"));
 							looper.start();
 						break;
 						
-						case ("IASWD_S"):
+						case IASWD_S:
 							
 							System.out.println("case IASWD_S");
 							parameters.Alarm = true;
 						
 							WarningDevice = new FIMqttACActuator(
 								"tcp://192.168.184.129:1883",
-								"/formosa/"+object.get("z")+object.get("id"),
+								"/formosa/"+object.get("z")+"/"+object.get("id"),
 								new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
 								"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
 						
@@ -105,11 +136,11 @@ public class Go implements Runnable {
 								"tcp://192.168.184.129:1883",
 								"/formosa/"+object.get("z")+"/Looper",
 								new FIConfigParams(),
-								"/formosa/"+object.get("z")+object.get("id"));
+								"/formosa/"+object.get("z")+"/"+object.get("id"));
 							looper.start();
 						break;
 					
-						case ("LessEqualThan"):
+						case LessEqualThan:
 
 							System.out.println("case LessThan");
 							parameters.compare = "LessEqualThan";
@@ -123,7 +154,7 @@ public class Go implements Runnable {
 							lessEqualThanOperator.start();
 							break;
 							
-						case ("LessThan"):
+						case LessThan:
 							
 							System.out.println("case LessThan");
 						parameters.compare = "LessThan";
@@ -137,7 +168,7 @@ public class Go implements Runnable {
 							lessThanOperator.start();
 							break;
 							
-						case ("Equal"):
+						case Equal:
 
 							System.out.println("case Equal");
 							parameters.compare = "Equal";
@@ -151,7 +182,7 @@ public class Go implements Runnable {
 							EqualOperator.start();
 							break;	
 						
-						case("Number"):
+						case Number:
 						
 							System.out.println("case Number");
 							
@@ -163,9 +194,9 @@ public class Go implements Runnable {
 							number.start();
 							break;
 						
-						case ("IlluminanceMeasurement_S"):
+						case IlluminanceMeasurement_S:
 						
-							System.out.println("case IlluminanceMeasurement_S");
+							System.out.println("case IlluminanceMeasurement_S : "+object.get("deviceName"));
 						
 							Illuminance = new FIMqttACSensor(
 									"tcp://192.168.184.129:1883",
@@ -175,7 +206,7 @@ public class Go implements Runnable {
 							Illuminance.start();
 							break;
 							
-						case ("TemperatureMeasurement_S"):
+						case TemperatureMeasurement_S:
 							
 							System.out.println("case TemperatureMeasurement_S");
 						

@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -140,8 +141,6 @@ public class Main {
 			 if(parameters.have_sensor[i] != "")
 				 wehave++;
 		 }
-		 System.out.println(wehave);
-		 System.out.println(num);
 		 if(wehave == num){ //success
 				jsonObj.put("success", "true");		   
 				
@@ -270,19 +269,7 @@ public class Main {
 						}
 					}
 				}
-				
-				Date d=new Date();
-			    String now_date = d.toString().substring(8,10);
-			    String now_clock = d.toString().substring(11,13);
-			    	    
-			    Calendar c=Calendar.getInstance();
-			    		 int now_year = c.get(Calendar.YEAR);
-			             int now_month = c.get(Calendar.MONTH) + 1;
-			             
-			             if(now_month == 13)
-			            	 now_month = 1;
-			        
-			             
+				  
 				if(inputLine.regionMatches(i, "Device_Address", 0, 14) == true){ //get device address , check alive
 					d_address = inputLine.substring(i + 17, i+22);
 										
@@ -313,14 +300,21 @@ public class Main {
 						} 	
 								
 							if(network_jason.regionMatches(m, "last_updated", 0, 12) == true && flag ==1){
-									update = network_jason.substring(m + 16, m+32);
-									String update_year = update.substring(0,4);
-									String update_month = update.substring(5,7);
-									String update_date = update.substring(8,10);
-									String update_hour = update.substring(11,13);
-									String update_minute = update.substring(14,16);
+									update = network_jason.substring(m + 16, m+35);
+									update = update.replace('T', ' ');
+							
+								//	String dateString = "2010-03-02 20:25:58";
+									
+									SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+									
+									Date date = sdf.parse(update);
+									Date d=new Date();        
+								//	System.out.println(date);
 
-									if(Integer.parseInt(now_clock) - Integer.parseInt(update_hour) < 3 && update_date.equals(now_date) && Integer.parseInt(update_month) ==now_month /*&& update_year.equals(now_year)*/)
+									long now_time = (d.getTime())/1000;
+									long update_time = (date.getTime())/1000;
+
+									if(now_time - update_time < 10)
 										d_alive = true;
 									else
 										d_alive = false;
@@ -343,6 +337,7 @@ public class Main {
 						d_type = "";
 						d_mac = "";
 						d_address = "";
+						d_alive = false;
 				}
 			}	
 			
@@ -350,6 +345,11 @@ public class Main {
 					if(arr[m].d_type.equals("Meter_S")){
 							arr[m].d_alive = true;
 					}
+					
+					if(arr[m].d_type.equals("IASWD_S")){
+						arr[m].d_alive = true;
+				}
+					
 				System.out.println(m+" : "+arr[m].d_name + "+" + arr[m].d_type + "+" + arr[m].d_mac + "+" +arr[m].d_address + "+" + arr[m].d_alive);
 			}
 		}
@@ -364,7 +364,7 @@ public class Main {
 			
 			for(j = 0;j < 20;j ++){
 				
-				if((arr[m].d_type).equals(parameters.need_sensor[j]) /*&& arr[m].d_alive == true*/){ 	// alive
+				if((arr[m].d_type).equals(parameters.need_sensor[j]) && arr[m].d_alive == true){ 	// alive
 					parameters.have_sensor[j] = arr[m].d_name;
 					break;
 				}
