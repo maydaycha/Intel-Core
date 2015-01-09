@@ -18,13 +18,16 @@ public class Go implements Runnable {
 	
 	FIMqttLooper looper;
 	
-	FIMqttObject Illuminance;
-	FIMqttObject Occupancy;
-	FIMqttObject number;
-	FIMqttObject lessThanOperator;
-	FIMqttObject lessEqualThanOperator;
-	FIMqttObject powerSwitch;
-	JSONArray jsonarray;
+	FIMqttObject Illuminance = null;
+	FIMqttObject Temperature = null;
+	FIMqttObject number = null;
+	FIMqttObject lessThanOperator = null;
+	FIMqttObject lessEqualThanOperator = null;
+	FIMqttObject EqualOperator = null;
+	FIMqttObject powerSwitch = null;
+	FIMqttObject WarningDevice = null;
+	JSONArray jsonarray = null;
+	
 	/*
 	public Go(String sessionId) {
 		FIConfigParams parameter = new FIConfigParams(); 
@@ -57,7 +60,6 @@ public class Go implements Runnable {
 		// TODO Auto-generated method stub
 		if(jsonarray != null){
 		//FIConfigParams parameter = new FIConfigParams(); 
-			
 			for (Object o : jsonarray)
 			  {
 					//System.out.println(o);
@@ -85,11 +87,32 @@ public class Go implements Runnable {
 									"/formosa/"+object.get("z")+object.get("id"));
 							looper.start();
 						break;
+						
+						case ("IASWD_S"):
+							
+							System.out.println("case IASWD_S");
+							parameters.Alarm = true;
+						
+							WarningDevice = new FIMqttACActuator(
+								"tcp://192.168.184.129:1883",
+								"/formosa/"+object.get("z")+object.get("id"),
+								new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
+								"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
+						
+							WarningDevice.start();
+					
+							looper = new FIMqttLooper(
+								"tcp://192.168.184.129:1883",
+								"/formosa/"+object.get("z")+"/Looper",
+								new FIConfigParams(),
+								"/formosa/"+object.get("z")+object.get("id"));
+							looper.start();
+						break;
 					
 						case ("LessEqualThan"):
 
 							System.out.println("case LessThan");
-							parameters.is_equal = true;
+							parameters.compare = "LessEqualThan";
 							lessEqualThanOperator = new FIMqttLessThanOperator(
 									"tcp://192.168.184.129:1883",
 									"/formosa/"+object.get("z")+"/"+object.get("id"),
@@ -103,7 +126,7 @@ public class Go implements Runnable {
 						case ("LessThan"):
 							
 							System.out.println("case LessThan");
-							parameters.is_equal = false;
+						parameters.compare = "LessThan";
 							lessThanOperator = new FIMqttLessThanOperator(
 									"tcp://192.168.184.129:1883",
 									"/formosa/"+object.get("z")+"/"+object.get("id"),
@@ -114,6 +137,20 @@ public class Go implements Runnable {
 							lessThanOperator.start();
 							break;
 							
+						case ("Equal"):
+
+							System.out.println("case Equal");
+							parameters.compare = "Equal";
+							EqualOperator = new FIMqttLessThanOperator(
+									"tcp://192.168.184.129:1883",
+									"/formosa/"+object.get("z")+"/"+object.get("id"),
+									new FIConfigParams(),
+									"/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
+									"/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
+							
+							EqualOperator.start();
+							break;	
+						
 						case("Number"):
 						
 							System.out.println("case Number");
@@ -136,22 +173,19 @@ public class Go implements Runnable {
 									new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
 									"/formosa/"+object.get("z")+"/Looper");
 							Illuminance.start();
-							System.out.println("case end");
 							break;
 							
-						case ("OccupancySensing_S"):
+						case ("TemperatureMeasurement_S"):
 							
-							System.out.println("case OccupancySensing_S");
+							System.out.println("case TemperatureMeasurement_S");
 						
-							Occupancy = new FIMqttACSensor(
+							Temperature = new FIMqttACSensor(
 									"tcp://192.168.184.129:1883",
 									"/formosa/"+object.get("z")+"/"+object.get("id"), 
 									new FIConfigParams().setParameter("ameliacreek", object.get("deviceName")),
 									"/formosa/"+object.get("z")+"/Looper");
-							Occupancy.start();
-							System.out.println("case end");
-							break;
-							
+							Temperature.start();
+							break;							
 					} 			
 			  }
 			  
@@ -201,6 +235,31 @@ public class Go implements Runnable {
 	//	lessThanOperator.start();
 	//	powerSwitch.start();
 		looper.run();
+		
+		parameters.five_s_alive = true;
+    	while(true){
+    			if(!parameters.five_s_alive){
+    					
+    				 if(Illuminance != null)
+    					 Illuminance.finalize();
+    				 if(Temperature != null)
+    					 Temperature.finalize();
+    				 if(number != null)
+    					 number.finalize();
+    				 if(lessThanOperator != null)
+    					 lessThanOperator.finalize();
+    				 if(lessEqualThanOperator != null)
+    					 lessEqualThanOperator.finalize();
+    				 if(EqualOperator != null)
+    					 EqualOperator.finalize();
+    				 if(powerSwitch != null)
+    					 powerSwitch.finalize();
+    				 if(WarningDevice != null)
+    					 WarningDevice.finalize();
+
+    				break;
+    			}
+    		}
 		} 
 	}
 	

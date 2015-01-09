@@ -111,9 +111,9 @@ public class Main {
 		  {
 		    JSONObject sensor = (JSONObject) o;
 		    
-		    Boolean check = (Boolean) sensor.get("check");
+		    String check = (String) sensor.get("deviceName");
 		    
-		    if(check){
+		    if(check != null){
 		    	String type = (String) sensor.get("type");
 		    	parameters.need_sensor[num] = type;
 		    	num++;	
@@ -127,29 +127,29 @@ public class Main {
 		    JSONObject sensor = (JSONObject) o;
 		    
 		    
-		    Boolean check = (Boolean) sensor.get("check");
-		    
-			   
-		    if(check){
+		    String check = (String) sensor.get("deviceName");
+			
+		    if(check != null){
 		    	sensor.remove("deviceName");
 			    sensor.put("deviceName", parameters.have_sensor[i]);
 			    i++;	    	
 		    }
-		   
 		  }
 		 
 		 for(i = 0;i < num;i++){
 			 if(parameters.have_sensor[i] != "")
 				 wehave++;
-		 }	 
-
+		 }
+		 System.out.println(wehave);
+		 System.out.println(num);
 		 if(wehave == num){ //success
 				jsonObj.put("success", "true");		   
 				
 				Thread t1 = new Thread(new Go(a));
 		    	t1.start();
-			}
+		}
 		 else{
+			 	
 			 	jsonObj.put("success", "false");		   
 		 }
 		 
@@ -350,7 +350,7 @@ public class Main {
 					if(arr[m].d_type.equals("Meter_S")){
 							arr[m].d_alive = true;
 					}
-			//	System.out.println(m+" : "+arr[m].d_name + "+" + arr[m].d_type + "+" + arr[m].d_mac + "+" +arr[m].d_address + "+" + arr[m].d_alive);
+				System.out.println(m+" : "+arr[m].d_name + "+" + arr[m].d_type + "+" + arr[m].d_mac + "+" +arr[m].d_address + "+" + arr[m].d_alive);
 			}
 		}
 		
@@ -364,9 +364,8 @@ public class Main {
 			
 			for(j = 0;j < 20;j ++){
 				
-				if((arr[m].d_type).equals(parameters.need_sensor[j]) && arr[m].d_alive == true){ 	// alive
+				if((arr[m].d_type).equals(parameters.need_sensor[j]) /*&& arr[m].d_alive == true*/){ 	// alive
 					parameters.have_sensor[j] = arr[m].d_name;
-				//	System.out.println(parameters.have_sensor[j]);
 					break;
 				}
 			}

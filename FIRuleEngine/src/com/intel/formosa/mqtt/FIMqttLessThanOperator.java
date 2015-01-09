@@ -19,9 +19,17 @@ public class FIMqttLessThanOperator extends FIMqttBinaryOperator {
 	public <T extends Number> void run(T ... numbers) {
 		assert numbers.length >= 2;
 		
-		if(parameters.is_equal)
+		if(parameters.compare.equals("LessEqualThan")){
     	publish(numbers[0].floatValue() <= numbers[1].floatValue() ? 1 : 0);
-    	else
+		}
+    	else if(parameters.compare.equals("LessThan")){
 		publish(numbers[0].floatValue() < numbers[1].floatValue() ? 1 : 0);
-	}
+    	}
+		else{
+    		if(numbers[0].floatValue() == numbers[1].floatValue())
+    		publish(1);
+    		else
+    		publish(0);
+    	}
+    }
 }
