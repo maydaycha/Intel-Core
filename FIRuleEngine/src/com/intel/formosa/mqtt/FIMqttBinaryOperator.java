@@ -57,8 +57,9 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 	public void onFIMessageArrived(FIMessage message) {		
 		// TODO: Develop FSM to determine whether or not all parameters are received.
 		// TODO: Replace the following placeholder.
-
+		
 		if (message != null && state == 0) {
+	
 			if(message.id.equals(mLhs)){
 
 				state = 1;
@@ -70,6 +71,7 @@ public abstract class FIMqttBinaryOperator extends FIMqttObject implements FIOpe
 				state = 2;
 				rhs_v = message.value(rhs_v);
 			}
+			
 		}
 		
 		if (message != null && state == 1) {

@@ -3,6 +3,10 @@ package com.intel.formosa;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 /**
 *
 * @author Shao-Wen Yang <shao-wen.yang@intel.com>
@@ -33,18 +37,36 @@ public class FIMessage {
 		String obj = null;
 		
 		try {
-			obj = new String(payload , "UTF-8");
+			obj = new String(payload, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			
-		}
-		
+		}	
 		return obj;
 	}
 	
+	// ren-jie
+	public boolean isDouble(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+	
 	public <T> T value(T defaultValue) {
 		String obj = toString();
-
+		
+		if(!isDouble(obj)){
+			try {
+				obj = (String) ((JSONObject) new JSONParser().parse(obj)).get("data");
+				
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
 		if (obj != null && !obj.isEmpty()) {
+		
 			try {
 				if (defaultValue instanceof String) {
 					@SuppressWarnings("unchecked")

@@ -6,6 +6,7 @@ import com.intel.formosa.params.FIParams;
 /**
 *
 * @author Shao-Wen Yang <shao-wen.yang@intel.com>
+* @author Ren-Jie Wu <ren-jie.wu@intel.com>
 *
 */
 public class FIMqttACActuator extends FIMqttSink {

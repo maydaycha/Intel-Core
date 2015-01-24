@@ -8,6 +8,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.json.simple.JSONObject;
 
 import com.intel.formosa.FIMessage;
 import com.intel.formosa.FIObject;
@@ -78,8 +79,19 @@ public abstract class FIMqttObject implements FIObject, FIMqttPublisher, MqttCal
     
     @Override
     public void publish(FIMessage message) {
-    	if (mMqttClient != null && mMqttClient.isConnected() && !message.id.isEmpty()) {    	
-	    	MqttMessage mqttMessage = new MqttMessage(message.payload);
+    	if (mMqttClient != null && mMqttClient.isConnected() && !message.id.isEmpty()) {
+    		MqttMessage mqttMessage = null;
+    		String[] toks = message.id.replaceFirst("^/", "").split("/");
+    		if (!message.id.startsWith("/formosa") && toks.length >= 4) {  
+        		JSONObject obj = new JSONObject();
+        		obj.put("protocolid", toks[1]);
+        		obj.put("deviceidentifier", toks[2]);
+        		obj.put("sensoridentifier", toks[3]);
+        		obj.put("data", new String(message.payload));
+        		mqttMessage = new MqttMessage(obj.toJSONString().getBytes());
+    		} else {
+    			mqttMessage = new MqttMessage(message.payload);
+    		}
 	    	try {
 	        	mqttMessage.setQos(1);
 	        	mMqttClient.getTopic(message.id).publish(mqttMessage);
@@ -103,7 +115,7 @@ public abstract class FIMqttObject implements FIObject, FIMqttPublisher, MqttCal
 	
     @Override
 	public <T extends Number> void publish(T number) {
-    	publish(new FIMessage(mName, number));		
+    	publish(new FIMessage(mName, number));
 	}
     
     public void publish() {

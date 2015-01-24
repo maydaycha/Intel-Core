@@ -26,6 +26,7 @@ public class FIMqttNumber extends FIMqttSource {
 
 	@Override
 	public <T extends Number> void sink(T unused) {		
+		
 		publish(mNumber);
 	}
 

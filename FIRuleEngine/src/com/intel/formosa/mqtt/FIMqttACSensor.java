@@ -8,6 +8,7 @@ import com.intel.formosa.params.FIParams;
 /**
 *
 * @author Shao-Wen Yang <shao-wen.yang@intel.com>
+* @author Ren-Jie Wu <ren-jie.wu@intel.com>
 *
 */
 public class FIMqttACSensor extends FIMqttSource {
@@ -20,6 +21,7 @@ public class FIMqttACSensor extends FIMqttSource {
 		super(uri, name, params, source);
 		
 		mACSource = params.getParameter("ameliacreek", "");
+		
 	}
 
 	@Override
@@ -58,7 +60,7 @@ public class FIMqttACSensor extends FIMqttSource {
 			mValue = message.value(0.0);
 			sink(mValue);
 		} else {
-			//sink(mValue);
+//			sink(mValue);
 		}
 	}
 
