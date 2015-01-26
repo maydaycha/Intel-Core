@@ -224,7 +224,7 @@ public class Main {
         if(sensorRequest == num) { //success
             if (runnableInstance.containsKey(sessionId)) {
                 Go g = (Go) runnableInstance.get(sessionId);
-     //           g.setAliveFlag(false);
+                g.setAliveFlag(false);
                 g = null;
                 runnableInstance.remove(sessionId);
             }
