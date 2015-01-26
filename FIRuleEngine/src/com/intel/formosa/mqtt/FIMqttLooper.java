@@ -21,7 +21,7 @@ public class FIMqttLooper extends FIMqttOperator {
     Timer timer = new Timer();
     String topic = null;
     String broker = "tcp://192.168.184.131:1883";
-    private static int counter = 0;
+    private int counter = 0;
 
     public FIMqttLooper(String uri, String name, FIParams params, String ... sources) {
         super(uri, name, params, sources);
