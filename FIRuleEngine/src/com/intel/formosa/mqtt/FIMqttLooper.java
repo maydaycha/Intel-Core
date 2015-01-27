@@ -20,7 +20,7 @@ public class FIMqttLooper extends FIMqttOperator {
     volatile Boolean alive = true;
     Timer timer = new Timer();
     String topic = null;
-    String broker = "tcp://192.168.184.131:1883";
+    String broker = "tcp://localhost:1883";
     private int counter = 0;
     private boolean needReDeploy = true;
 

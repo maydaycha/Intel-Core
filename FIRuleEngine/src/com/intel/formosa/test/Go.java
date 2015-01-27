@@ -33,7 +33,7 @@ public class Go implements Runnable {
     JSONArray jsonarray = null;
     Parameters parameters = null;
     String topic = null;
-    String broker = "tcp://192.168.184.131:1883";
+    String broker = "tcp://localhost:1883";
 
 	
     public Go(JSONArray jsonarray) {
