@@ -22,6 +22,7 @@ public class FIMqttLooper extends FIMqttOperator {
     String topic = null;
     String broker = "tcp://192.168.184.131:1883";
     private int counter = 0;
+    private boolean needReDeploy = true;
 
     public FIMqttLooper(String uri, String name, FIParams params, String ... sources) {
         super(uri, name, params, sources);
@@ -31,6 +32,12 @@ public class FIMqttLooper extends FIMqttOperator {
         topic = "/"+names[1]+"/"+names[2]+"/"+"finish";
 
     }
+
+    public void setNeedReDeploy(boolean needReDeploy) {
+        this.needReDeploy = needReDeploy;
+        System.out.println("[FIMqttLooper] needReDeploy: " + this.needReDeploy);
+    }
+
 
     @Override
     public <T extends Number> void run(T ... unused) {
@@ -64,24 +71,28 @@ public class FIMqttLooper extends FIMqttOperator {
         alive = false;
         String content  = "{123}";
         MqttClient mMqttClient;
-        try {
-            mMqttClient = new MqttClient(broker,MqttClient.generateClientId());
 
-            MqttConnectOptions     connOpts = new MqttConnectOptions();
-            connOpts.setCleanSession(true);
+        if (needReDeploy) {
+            try {
+                mMqttClient = new MqttClient(broker,MqttClient.generateClientId());
 
-            mMqttClient.connect(connOpts);
+                MqttConnectOptions     connOpts = new MqttConnectOptions();
+                connOpts.setCleanSession(true);
 
-            System.out.println(topic);
-            MqttMessage message = new MqttMessage(content.getBytes());
-            message.setQos(1);
-            mMqttClient.publish(topic, message);
-            System.out.println("finish");
-            mMqttClient.disconnect();
-        } catch (MqttException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+                mMqttClient.connect(connOpts);
+
+                System.out.println(topic);
+                MqttMessage message = new MqttMessage(content.getBytes());
+                message.setQos(1);
+                mMqttClient.publish(topic, message);
+                System.out.println("finish");
+                mMqttClient.disconnect();
+            } catch (MqttException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
         }
-
     }
+
 }

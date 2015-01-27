@@ -223,8 +223,14 @@ public class Go implements Runnable {
             parameters.five_s_alive = true;
 
             while(true) {
-//                System.out.println("[while] parameters.five_s_alive = " + parameters.five_s_alive);
+
+                System.out.println("[while] parameters.five_s_alive = " + parameters.five_s_alive);
+
                 if (!parameters.five_s_alive){
+
+                    /** Tell looper that no need to deploy again */
+                    looper.setNeedReDeploy(false);
+
                     System.out.println("[in while in if] parameters.five_s_alive = " + parameters.five_s_alive);
                     if(Illuminance != null){
                         Illuminance.stop();
@@ -267,30 +273,37 @@ public class Go implements Runnable {
                         WarningDevice = null;
                     }
 
-                    String content  = "{123}";
-                    MqttClient mMqttClient;
-                    try {
-                        mMqttClient = new MqttClient(broker,MqttClient.generateClientId());
-
-                        MqttConnectOptions connOpts = new MqttConnectOptions();
-                        connOpts.setCleanSession(true);
-
-                        mMqttClient.connect(connOpts);
-
-                        System.out.println("finish topic: " + topic);
-                        MqttMessage message = new MqttMessage(content.getBytes());
-                        message.setQos(1);
-                        mMqttClient.publish(topic, message);
-
-                        mMqttClient.disconnect();
-                    } catch (MqttException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                        System.out.println("[exception]" + e);
-                    }
+//                    String content  = "{123}";
+//                    MqttClient mMqttClient;
+//                    try {
+//                        mMqttClient = new MqttClient(broker,MqttClient.generateClientId());
+//
+//                        MqttConnectOptions connOpts = new MqttConnectOptions();
+//                        connOpts.setCleanSession(true);
+//
+//                        mMqttClient.connect(connOpts);
+//
+//                        System.out.println("finish topic: " + topic);
+//                        MqttMessage message = new MqttMessage(content.getBytes());
+//                        message.setQos(1);
+//                        mMqttClient.publish(topic, message);
+//
+//                        mMqttClient.disconnect();
+//                    } catch (MqttException e) {
+//                        // TODO Auto-generated catch block
+//                        e.printStackTrace();
+//                        System.out.println("[exception]" + e);
+//                    }
 
                     System.out.println("[Rule Engine] STOP!");
                     break;
+                }
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    System.out.println("Thread sleep error: " + e);
                 }
             }
         }
