@@ -1,10 +1,5 @@
 package com.intel.formosa.test;
 
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -272,28 +267,6 @@ public class Go implements Runnable {
                         WarningDevice.finalize();
                         WarningDevice = null;
                     }
-
-//                    String content  = "{123}";
-//                    MqttClient mMqttClient;
-//                    try {
-//                        mMqttClient = new MqttClient(broker,MqttClient.generateClientId());
-//
-//                        MqttConnectOptions connOpts = new MqttConnectOptions();
-//                        connOpts.setCleanSession(true);
-//
-//                        mMqttClient.connect(connOpts);
-//
-//                        System.out.println("finish topic: " + topic);
-//                        MqttMessage message = new MqttMessage(content.getBytes());
-//                        message.setQos(1);
-//                        mMqttClient.publish(topic, message);
-//
-//                        mMqttClient.disconnect();
-//                    } catch (MqttException e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                        System.out.println("[exception]" + e);
-//                    }
 
                     System.out.println("[Rule Engine] STOP!");
                     break;
