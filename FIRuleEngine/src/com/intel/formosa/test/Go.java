@@ -11,11 +11,16 @@ import com.intel.formosa.mqtt.FIMqttNumber;
 import com.intel.formosa.mqtt.FIMqttObject;
 import com.intel.formosa.params.FIConfigParams;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
 
 public class Go implements Runnable {
 
 
-    FIMqttLooper looper;
+    FIMqttLooper looper = null;
 
     FIMqttObject Illuminance = null;
     FIMqttObject Temperature = null;
@@ -25,15 +30,21 @@ public class Go implements Runnable {
     FIMqttObject EqualOperator = null;
     FIMqttObject powerSwitch = null;
     FIMqttObject WarningDevice = null;
-    JSONArray jsonarray = null;
+    JSONArray flow = null;
     Parameters parameters = null;
     String topic = null;
     String broker = "tcp://localhost:1883";
 
+    String role = null;
+    String sessionId = null;
+    String hostIpAddress = null;
+
 	
-    public Go(JSONArray jsonarray) {
+    public Go(JSONArray flow, String role, String sessionId) {
         // TODO Auto-generated constructor stub
-        this.jsonarray = jsonarray;
+        this.flow = flow;
+        this.role = role;
+        this.sessionId = sessionId;
         parameters = new Parameters();
 
     }
@@ -71,63 +82,80 @@ public class Go implements Runnable {
 
     @Override
     public void run() {
+
+        try {
+            hostIpAddress = getHostIpAddress();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
         // TODO Auto-generated method stub
-        if(jsonarray != null){
+        if (flow != null) {
             //FIConfigParams parameter = new FIConfigParams();
-            for (Object o : jsonarray)
-            {
+            for (Object o : flow) {
                 //System.out.println(o);
                 JSONObject object = (JSONObject) o;
                 JSONArray a = (JSONArray) object.get("wires");
                 String operator = null;
                 boolean Alarm = false;
 
-                switch(Nodes.getByName(object.get("deviceType").toString())){
+                switch (Nodes.getByName(object.get("deviceType").toString())) {
 
                     case ONOFF_S:
+                        if (object.get("runningHost").toString().equals(hostIpAddress)) {
+                            System.out.println("case ONOFF_S");
+                            Alarm = false;
+                            topic = "/formosa/"+ sessionId +"/finish";
 
-                        System.out.println("case ONOFF_S");
-                        Alarm = false;
-                        topic = "/formosa/"+(String) object.get("z")+"/finish";
+                            powerSwitch = new FIMqttACActuator(
+                                    broker,
+                                    "/formosa/"+ sessionId +"/"+object.get("id"),
+                                    new FIConfigParams().setParameter("ameliacreek", "/sub"+object.get("deviceName")+"/"),
+                                    Alarm,
+                                    "/formosa/"+ sessionId +"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
 
-                        powerSwitch = new FIMqttACActuator(
-                        		broker,
-                                "/formosa/"+object.get("z")+"/"+object.get("id"),
-                                new FIConfigParams().setParameter("ameliacreek", "/sub"+object.get("deviceName")+"/"),
-                                Alarm,
-                                "/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
+                            powerSwitch.start();
+                        }
 
-                        powerSwitch.start();
+                        /** Only master can create the looper */
+                        if (role.equals("master")) {
+                            looper = new FIMqttLooper(
+                                    broker,
+                                    "/formosa/"+ sessionId +"/Looper",
+                                    new FIConfigParams(),
+                                    "/formosa/"+ sessionId +"/"+object.get("id"));
+                            looper.start();
+                        }
 
-                        looper = new FIMqttLooper(
-                        		broker,
-                                "/formosa/"+object.get("z")+"/Looper",
-                                new FIConfigParams(),
-                                "/formosa/"+object.get("z")+"/"+object.get("id"));
-                        looper.start();
                         break;
 
                     case IASWD_S:
 
-                        System.out.println("case IASWD_S");
-                        Alarm = true;
-                        topic = "/formosa/"+(String) object.get("z")+"/finish";
+                        if (object.get("runningHost").toString().equals(hostIpAddress)) {
+                            System.out.println("case IASWD_S");
+                            Alarm = true;
+                            topic = "/formosa/"+ sessionId +"/finish";
 
-                        WarningDevice = new FIMqttACActuator(
-                        		broker,
-                                "/formosa/"+object.get("z")+"/"+object.get("id"),
-                                new FIConfigParams().setParameter("ameliacreek", "/sub"+object.get("deviceName")+"/"),
-                                Alarm,
-                                "/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
+                            WarningDevice = new FIMqttACActuator(
+                                    broker,
+                                    "/formosa/"+ sessionId +"/"+object.get("id"),
+                                    new FIConfigParams().setParameter("ameliacreek", "/sub"+object.get("deviceName")+"/"),
+                                    Alarm,
+                                    "/formosa/"+ sessionId +"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2));
 
-                        WarningDevice.start();
+                            WarningDevice.start();
+                        }
 
-                        looper = new FIMqttLooper(
-                        		broker,
-                                "/formosa/"+object.get("z")+"/Looper",
-                                new FIConfigParams(),
-                                "/formosa/"+object.get("z")+"/"+object.get("id"));
-                        looper.start();
+                        /** Only master can create the looper */
+                        if (role.equals("master")) {
+                            looper = new FIMqttLooper(
+                                    broker,
+                                    "/formosa/"+ sessionId +"/Looper",
+                                    new FIConfigParams(),
+                                    "/formosa/"+ sessionId +"/"+object.get("id"));
+                            looper.start();
+                        }
+
                         break;
 
                     case LessEqualThan:
@@ -136,11 +164,11 @@ public class Go implements Runnable {
                         operator = "LessEqualThan";
                         lessEqualThanOperator = new FIMqttLessThanOperator(
                         		broker,
-                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                "/formosa/"+ sessionId +"/"+object.get("id"),
                                 new FIConfigParams(),
                                 operator,
-                                "/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
-                                "/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
+                                "/formosa/"+ sessionId +"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
+                                "/formosa/"+ sessionId +"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
 
                         lessEqualThanOperator.start();
                         break;
@@ -151,11 +179,11 @@ public class Go implements Runnable {
                         operator = "LessThan";
                         lessThanOperator = new FIMqttLessThanOperator(
                         		broker,
-                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                "/formosa/"+ sessionId +"/"+object.get("id"),
                                 new FIConfigParams(),
                                 operator,
-                                "/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
-                                "/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
+                                "/formosa/"+ sessionId +"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
+                                "/formosa/"+ sessionId +"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
 
                         lessThanOperator.start();
                         break;
@@ -166,11 +194,11 @@ public class Go implements Runnable {
                         operator = "Equal";
                         EqualOperator = new FIMqttLessThanOperator(
                         		broker,
-                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                "/formosa/"+ sessionId +"/"+object.get("id"),
                                 new FIConfigParams(),
                                 operator,
-                                "/formosa/"+object.get("z")+"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
-                                "/formosa/"+object.get("z")+"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
+                                "/formosa/"+ sessionId +"/"+ a.get(0).toString().substring(2, a.get(0).toString().length()-2),
+                                "/formosa/"+ sessionId +"/"+ a.get(1).toString().substring(2, a.get(1).toString().length()-2));
 
                         EqualOperator.start();
                         break;
@@ -181,9 +209,9 @@ public class Go implements Runnable {
 
                         number = new FIMqttNumber(
                         		broker,
-                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                "/formosa/"+ sessionId +"/"+object.get("id"),
                                 new FIConfigParams().setParameter("constant", object.get("value")),
-                                "/formosa/"+object.get("z")+"/Looper");
+                                "/formosa/"+ sessionId +"/Looper");
                         number.start();
                         break;
 
@@ -193,9 +221,9 @@ public class Go implements Runnable {
 
                         Illuminance = new FIMqttACSensor(
                         		broker,
-                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                "/formosa/"+ sessionId +"/"+object.get("id"),
                                 new FIConfigParams().setParameter("ameliacreek", "/pub"+object.get("deviceName")+"/"),
-                                "/formosa/"+object.get("z")+"/Looper");
+                                "/formosa/"+ sessionId +"/Looper");
                         Illuminance.start();
                         break;
 
@@ -205,15 +233,18 @@ public class Go implements Runnable {
 
                         Temperature = new FIMqttACSensor(
                         		broker,
-                                "/formosa/"+object.get("z")+"/"+object.get("id"),
+                                "/formosa/"+ sessionId +"/"+object.get("id"),
                                 new FIConfigParams().setParameter("ameliacreek", "/pub"+object.get("deviceName")+"/"),
-                                "/formosa/"+object.get("z")+"/Looper");
+                                "/formosa/"+ sessionId +"/Looper");
                         Temperature.start();
                         break;
                 }
             }
-			  
-            looper.run();
+
+            /** Only master can run the looper */
+			if (role.equals("master") && looper != null) {
+                looper.run();
+            }
 
             parameters.five_s_alive = true;
 
@@ -290,6 +321,32 @@ public class Go implements Runnable {
 
     public boolean getAliveFlag() {
         return parameters.five_s_alive;
+    }
+
+    private String getHostIpAddress() throws SocketException {
+        /** get the host ip address */
+        Enumeration<NetworkInterface> networkInterface = NetworkInterface.getNetworkInterfaces();
+
+        String hostIpAddress = "";
+
+        while (networkInterface.hasMoreElements()) {
+            NetworkInterface e = networkInterface.nextElement();
+
+            Enumeration<InetAddress> inetAddress = e.getInetAddresses();
+            while (inetAddress.hasMoreElements()) {
+                InetAddress addr = inetAddress.nextElement();
+                String candicateIp = addr.getHostAddress();
+
+                /** ignore mac address */
+                if (candicateIp.split("\\.").length == 4) {
+                    if (!candicateIp.equals("127.0.0.1")) {
+                        hostIpAddress = candicateIp;
+                    }
+                }
+            }
+        }
+
+        return hostIpAddress;
     }
 
 }
