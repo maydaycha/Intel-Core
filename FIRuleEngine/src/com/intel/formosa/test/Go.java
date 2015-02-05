@@ -35,15 +35,15 @@ public class Go implements Runnable {
     String topic = null;
     String broker = "tcp://localhost:1883";
 
-    String role = null;
+    Boolean isMaster = null;
     String sessionId = null;
     String hostIpAddress = null;
 
 	
-    public Go(JSONArray flow, String role, String sessionId) {
+    public Go(JSONArray flow, Boolean isMaster, String sessionId) {
         // TODO Auto-generated constructor stub
         this.flow = flow;
-        this.role = role;
+        this.isMaster = isMaster;
         this.sessionId = sessionId;
         parameters = new Parameters();
 
@@ -118,7 +118,7 @@ public class Go implements Runnable {
                         }
 
                         /** Only master can create the looper */
-                        if (role.equals("master")) {
+                        if (isMaster) {
                             looper = new FIMqttLooper(
                                     broker,
                                     "/formosa/"+ sessionId +"/Looper",
@@ -147,7 +147,7 @@ public class Go implements Runnable {
                         }
 
                         /** Only master can create the looper */
-                        if (role.equals("master")) {
+                        if (isMaster) {
                             looper = new FIMqttLooper(
                                     broker,
                                     "/formosa/"+ sessionId +"/Looper",
@@ -242,7 +242,7 @@ public class Go implements Runnable {
             }
 
             /** Only master can run the looper */
-			if (role.equals("master") && looper != null) {
+			if (isMaster && looper != null) {
                 looper.run();
             }
 
