@@ -6,11 +6,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-//import com.intel.formosa.test.Go;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -45,9 +46,12 @@ public class Main {
 
     private String token;
 
-    public String[] requested_sensor = new String[20];
-    public String[] available_sensor = new String[20];
-
+//    public String[] requested_sensor = new String[20];
+//    public String[] available_sensor = new String[20];
+//    public String[] requested_actuator = new String[20];
+    private ArrayList<String> requested_sensor = new ArrayList<String>();
+    private ArrayList<String> available_sensor = new ArrayList<String>();
+    public static List<List<String>> acList = new ArrayList<List<String>>();
     private long protocol_id = 0;
 
     //private Device[] arrDevice = new Device[50];
@@ -61,9 +65,9 @@ public class Main {
 //        String data = "";
         JSONObject result;
         Main conn = new Main();
-
+        
         /** this will do in the run function */
-//        conn.generateToken();
+        conn.generateToken();
 
 
         /** this will do in the run function */
@@ -75,11 +79,14 @@ public class Main {
         //	conn.retrieveDevicesList(uriDeviceInfo + deviceMAC);
 
         JSONObject jsonObj = (JSONObject) new JSONParser().parse(new FileReader("input.json"));
-
+        JSONObject jsonObj1 = (JSONObject) new JSONParser().parse(new FileReader("input2.json"));
+        
+        
         /** the parameter of run() should be the JSON string passed from Web */
         result = conn.run(jsonObj.toJSONString());
-
-        System.out.println(result);
+        
+        result = conn.run(jsonObj1.toJSONString());
+        System.out.println("acList : "+acList);
 
     }
 
@@ -155,23 +162,25 @@ public class Main {
         return data;
     }
 
-
-
-
     public JSONObject run(String jsonObjString) throws Exception {
 
         int num = 0;
         int i = 0;
+        int j = 0;
         int index = 0;
+        boolean pass = true;
+        boolean exist = false;     
         int sensorRequest = 0;  // number of requested sensors we found
         String sessionId = null;
-
+        
+        requested_sensor.clear();
+        available_sensor.clear();
 
         JSONObject jsonObj = (JSONObject) new JSONParser().parse(jsonObjString);
 
         /** get AC 1.1 authentication token */
         generateToken();
-
+        
         jsonObj.remove("type");
         jsonObj.put("type", "resp");
         sessionId = jsonObj.get("session_id").toString();
@@ -182,59 +191,122 @@ public class Main {
         for (Object o : a) {
             JSONObject sensor = (JSONObject) o;
             Boolean check = (Boolean) sensor.get("check");
-
+                 
             if (check){
-                String deviceType = (String) sensor.get("deviceType");
-                requested_sensor[num] = deviceType;
+                String deviceType = (String) sensor.get("deviceType");                
+                requested_sensor.add(num, deviceType);
                 num++;
-            }
+            }    
         }
 
         /** retrieve all devices info */
         retrieveData(retrieveDevicesList(uriDeviceInfo));
+//        retrieveData("{'key':'value'}");
 
-        for(i = 0;i < num;i++){
+        /** sensor request is satisfied */
 
-            for(index = 0; index<deviceList.size();index++){
+        	for(i = 0;i < num;i++){
 
-                if(requested_sensor[i].equals(deviceList.get(index).get_s_id().substring(3))){
+        		for(index = 0; index<deviceList.size();index++){
+        			//  	System.out.println("Sensor: "+requested_sensor.get(i)+" from "+deviceList.get(index).get_s_id().substring(3));
+        			if(requested_sensor.get(i).equals(deviceList.get(index).get_s_id().substring(3))){
+        				
+        				System.out.println("Sensor: "+requested_sensor.get(i)+" from "+deviceList.get(index).get_d_mac());
+        				available_sensor.add(i,deviceList.get(index).get_alive()+"/"+protocol_id+"/"+deviceList.get(index).get_d_mac()+"/"+deviceList.get(index).get_s_id());
+        				sensorRequest++;
+        				break;
+        			}
+        		}
+        	}
+        	/** fill in the json reply */
+        	i = 0;
+        	for (Object o : a) {
+        		JSONObject sensor = (JSONObject) o;
+        		Boolean check = (Boolean) sensor.get("check");
 
-                    System.out.println("Sensor: "+requested_sensor[i]+" from "+deviceList.get(index).get_d_mac());
-                    available_sensor[i] = "/"+protocol_id+"/"+deviceList.get(index).get_d_mac()+"/"+deviceList.get(index).get_s_id();
-                    sensorRequest++;
-                    break;
-
-                }
-            }
-        }
-
-        i = 0;
-        for (Object o : a) {
-            JSONObject sensor = (JSONObject) o;
-            String check = (String) sensor.get("deviceName");
-
-            if(check != null){
-                sensor.remove("deviceName");
-                sensor.put("deviceName", available_sensor[i]);
-                i++;
-            }
-        }
-
-
-        if(sensorRequest == num) { //success
+        		if(check){
+        			
+        			String categoly = (String) sensor.get("categoly");
+        			if(available_sensor.size() > i){
+            		
+        				String[] names = available_sensor.get(i).split("/");
+                    
+        				String topic = "/"+names[1]+"/"+names[2]+"/"+names[3];
+        				
+        				if(categoly.equals("output")){
+        					if(names[0].equals(true))
+        						sensor.remove("deviceName");
+        						sensor.put("deviceName", topic);
+        						
+        							/** record the reuse actuator */
+        						for(j = 0;j < acList.size();j++){
+        							if(topic.equals(acList.get(j).get(0))){
+        								List<String> acListData = new ArrayList<String>();
+        								acListData.add(topic);
+        								acListData.add(sessionId);
+        								acList.add(acListData);
+        								
+//        								System.out.println("get(0).get(0)x : "+acList.get(0).get(0));
+//            							System.out.println("get(0).get(1)x : "+acList.get(0).get(1));
+            							exist = true;
+        								break;
+        							}
+        						}
+        						
+        						if(!exist){       							
+        							List<String> acListData = new ArrayList<String>();
+        							acListData.add(topic);
+        							acListData.add(sessionId);
+        							acList.add(acListData);
+//        							System.out.println("get(0).get(0) : "+acList.get(0).get(0));
+//        							System.out.println("get(0).get(1) : "+acList.get(0).get(1));
+        						}
+        						
+        				}	
+        				else{
+        					sensor.remove("deviceName");
+        					sensor.put("deviceName", topic);
+        					System.out.println("use : "+topic);
+        				}
+        				i++;
+        			}
+        		}
+        	}
+        
+        
+        /** if mapping success, call Rule Engine */
+        if(sensorRequest == num) { 
             if (runnableInstance.containsKey(sessionId)) {
                 Go g = (Go) runnableInstance.get(sessionId);
-                g.setAliveFlag(false);
+     //           g.setAliveFlag(false);
                 g = null;
                 runnableInstance.remove(sessionId);
+                
+                for(j = 0;j < acList.size();j++){
+                	if(sessionId.equals(acList.get(j).get(1))){
+                		acList.remove(j);
+
+                	}
+                }
+            }
+            
+            for(j = 0;j < acList.size()-1;j++){
+            	if(acList.get(j+1) != null){
+            		if(acList.get(j).get(0).equals(acList.get(j+1).get(0))){
+            			System.out.println("monitor");
+                		Monitor monitor = new Monitor(acList.get(j).get(0));
+                		Thread t = new Thread(monitor);
+                		t.start();
+            		}	
+            	}
             }
 
             Go go = new Go(a);
             Thread t1 = new Thread(go);
             t1.start();
             runnableInstance.put(sessionId, go);
-            System.out.print("add " + sessionId + " to HashMap");
-
+            System.out.println("add " + sessionId + " to HashMap");
+            
             jsonObj.put("success", true);
         } else {
             jsonObj.put("success", false);
@@ -246,14 +318,14 @@ public class Main {
     private void retrieveData(String jsonObjString) throws Exception {
 
         int counter = 0;
+        String sensor_alive = "false";
 
 //        JSONParser jsonParser = new JSONParser();
 //        JSONObject objDevices = (JSONObject) jsonParser.parse(readerDevicesList);
 
         //TODO: Get Gateway IP Address
-
+//        JSONArray objDevices = (JSONArray) new JSONParser().parse(new FileReader("in_from_ac.json"));
         JSONArray objDevices = (JSONArray) new JSONParser().parse(jsonObjString);
-
 
         for (Object first_child : objDevices)
         {
@@ -275,16 +347,31 @@ public class Main {
                     JSONArray children = (JSONArray) each_device.get("children");
 
                     for (Object sensor : children){
-                        //System.out.println("QQ : "+ each_device);
+
                         JSONObject each_sensor = (JSONObject) sensor;
 
                         String sensor_name = (String) each_sensor.get("sensor_name");
                         String sensor_identifier = (String) each_sensor.get("sensor_identifier");
                         //sensor_identifier = sensor_identifier.substring(3);
+                        String sensor_datetime = (String) each_sensor.get("sensor_datetime");
+                        
+                        
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        
+                        Date date = sdf.parse(sensor_datetime);
+                        Date d=new Date();
 
-                        Device device = new Device(deviceName ,sensor_name ,deviceMAC, sensor_identifier);
+                        long now_time = (d.getTime())/1000;
+                        long update_time = (date.getTime())/1000;
+
+                        if(now_time - update_time < 5)
+                        	sensor_alive = "true";
+                        else
+                    	    sensor_alive = "false";
+                        
+                        Device device = new Device(deviceName ,sensor_name ,deviceMAC, sensor_identifier, sensor_alive);
                         deviceList.add(device);
-
+//                        System.out.println(device);
                         counter++;
                     }
                 }
@@ -293,15 +380,18 @@ public class Main {
 
     	 counter = 0;
        // Search requested sensors/actuators from the list of available devices
-       for(int index =0; index < deviceList.size(); index ++){
-    	   String deviceType = deviceList.get(index).get_s_id();
-//    	   Boolean deviceStatus = deviceList.get(index).getAlive();
-
-    	   if(deviceType.equals(available_sensor[index])){
-    		   available_sensor[counter] = deviceList.get(index).get_s_id();
-    		   counter++;
-    		   break;
-    	   }
-       }
+    	 
+//       int compare = deviceList.size() >= available_sensor.size() ? available_sensor.size() : deviceList.size();
+//    	 
+//       for(int index =0; index < compare; index ++){
+//    	   String deviceType = deviceList.get(index).get_s_id();
+//    	   //Boolean deviceStatus = deviceList.get(index).get_alive();
+//    	   
+//    	   if(deviceType.equals(requested_sensor.get(index))){
+//    		   available_sensor.add(counter,deviceList.get(index).get_s_id());
+//    		   counter++;
+//    		   break;
+//    	   }
+//       }
     }
 }
