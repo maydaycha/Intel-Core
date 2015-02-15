@@ -31,6 +31,7 @@ public class FIMqttACActuator extends FIMqttSink {
 				output = (Double) number;
 			}
 			else{
+				System.out.println(this.getName() + " publish: topic: " + mACSink + " message: " + number);
 				publish(new FIMessage(mACSink, number));
 				output = (Double)number;
 			}
